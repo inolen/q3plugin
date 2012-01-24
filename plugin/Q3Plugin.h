@@ -11,8 +11,7 @@ static void Sys_Main(void*);
 static void Sys_GLInit(FB::PluginWindow*);
 
 FB_FORWARD_PTR(Q3Plugin)
-class Q3Plugin : public FB::PluginCore
-{
+class Q3Plugin : public FB::PluginCore {
 public:
 	static void StaticInitialize();
 	static void StaticDeinitialize();
@@ -21,15 +20,14 @@ public:
 	virtual ~Q3Plugin();
 
 protected:
-	void onPluginReady();
-	void shutdown();
-
 	virtual FB::JSAPIPtr createJSAPI();
 	// If you want your plugin to always be windowless, set this to true
 	// If you want your plugin to be optionally windowless based on the
 	// value of the "windowless" param tag, remove this method or return
 	// FB::PluginCore::isWindowless()
 	virtual bool isWindowless() { return false; }
+
+	void BootstrapGame(FB::PluginWindow*);
 
 	BEGIN_PLUGIN_EVENT_MAP()
 		EVENTTYPE_CASE(FB::KeyDownEvent, onKeyDown, FB::PluginWindow)
@@ -50,8 +48,6 @@ protected:
 	virtual bool onWindowAttached(FB::AttachedEvent* evt, FB::PluginWindow*);
 	virtual bool onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow*);
 	/** END EVENTDEF -- DON'T CHANGE THIS LINE **/
-
-	void BootstrapGame(FB::PluginWindow*);
 };
 
 

@@ -2,6 +2,11 @@
 #define MSGPIPE_H
 
 typedef enum {
+	PIPE_READ,
+	PIPE_WRITE
+} PIPE_END;
+
+typedef enum {
 	KEYPRESS,
 	MOUSEPRESS,
 	MOUSEMOTION
@@ -47,7 +52,7 @@ typedef struct msgpipe_s {
 	int buflen;
 } msgpipe;
 
-extern msgpipe* msgpipe_open(const char* name/*, PIPE_TYPE type*/);
+extern msgpipe* msgpipe_open(const char* name, PIPE_END type);
 extern void msgpipe_close(msgpipe* pipe);
 extern void msgpipe_send(msgpipe* pipe, msgpipe_msg* msg);
 extern int msgpipe_poll(msgpipe* pipe, msgpipe_msg* msg);

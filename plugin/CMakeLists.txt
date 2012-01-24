@@ -45,7 +45,5 @@ include_directories(${OPENGL_INCLUDE_DIR})
 target_link_libraries (${PROJECT_NAME} ${OPENGL_LIBRARIES})
 
 find_package (SDL REQUIRED)
-#set(SDL_INCLUDE_DIR "/usr/local/include/SDL")
-#set(SDL_LIBRARY "/usr/local/lib/libSDL.so")
 include_directories(${SDL_INCLUDE_DIR})
 target_link_libraries (${PROJECT_NAME} ${SDL_LIBRARY})

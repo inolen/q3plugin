@@ -1,3 +1,4 @@
+
 #include "msgpipe.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -10,21 +11,29 @@
 
 extern int errno;
 
-msgpipe* msgpipe_open(const char* name) {
-	int ret;
+msgpipe* msgpipe_open(const char* name, PIPE_END type) {
+	int ret, fd;
 
-	errno = -1;
-	ret = mkfifo(name, 0666);
-
-	if (ret < 0 && errno != EEXIST) {
+	errno = 0;
+	if ((ret = mkfifo(name, 0666)) < 0 && errno != EEXIST) {
 		fprintf(stderr, "Failed to make pipe '%s'.\n", name);
 		return NULL;
+	}
+
+	if ((fd = open(name, type == PIPE_READ ? O_RDONLY : O_WRONLY)) < 0) {
+		fprintf(stderr, "Failed to open pipe '%s'.\n", name);
+		return NULL;
+	}
+
+	// After we've successfully opened, set the read pipe to non-blocking.
+	if (type == PIPE_READ) {
+		fcntl(fd, F_SETFL, O_RDONLY | O_NONBLOCK);
 	}
 
 	msgpipe* pipe = (msgpipe*)malloc(sizeof(msgpipe));
 	memset(pipe, 0, sizeof(msgpipe));
 	snprintf(pipe->name, sizeof(pipe->name), "%s", name);
-	pipe->fd = -1;
+	pipe->fd = fd;
 
 	return pipe;
 }
@@ -36,14 +45,8 @@ void msgpipe_close(msgpipe* pipe) {
 void msgpipe_send(msgpipe* pipe, msgpipe_msg* msg) {
 	int num;
 
-	if (pipe->fd < 0 &&
-		(pipe->fd = open(pipe->name, O_WRONLY)) < 0) {
-		fprintf(stderr, "Failed to open pipe '%s'.\n", pipe->name);
-		return;
-	}
-
 	if ((num = write(pipe->fd, msg, sizeof(msgpipe_msg)) < 0)) {
-		fprintf(stderr, "Failed to write to pipe.\n");
+		fprintf(stderr, "Failed to write to pipe, errno %i (fd: %i).\n", errno, pipe->fd);
 		return;
 	}
 }
@@ -51,20 +54,11 @@ void msgpipe_send(msgpipe* pipe, msgpipe_msg* msg) {
 void msgpipe_pump(msgpipe* pipe) {
 	int num;
 
-	if (pipe->fd < 0 &&
-		(pipe->fd = open(pipe->name, O_RDONLY | O_NONBLOCK)) < 0) {
-		fprintf(stderr, "Failed to open pipe '%s'.\n", pipe->name);
-		return;
-	}
-
 	// We don't want to read more than our current buffer can hold.
 	char* buf = pipe->buf + pipe->buflen;
 	int length = sizeof(char) * sizeof(pipe->buf) - pipe->buflen;
 
-	errno = -1;
-	num = read(pipe->fd, buf, length);
-
-	if (num == -1 && errno != EAGAIN) {
+	if ((num = read(pipe->fd, buf, length)) == -1 && errno != EAGAIN) {
 		fprintf(stderr, "Failed to read from pipe, errno %i.", errno);
 		return;
 	} else if (num > 0) {

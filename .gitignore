@@ -1,0 +1,4 @@
+*.sublime-*
+firebreath/
+*.o
+*.so

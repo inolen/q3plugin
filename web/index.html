@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>q3plugin</title>
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+      }
+    </style>
+    <script type="text/javascript">
+      function plugin0() {
+        return document.getElementById('plugin0');
+      }
+      plugin = plugin0;
+      function addEvent(obj, name, func) {
+        if (window.addEventListener) {
+          obj.addEventListener(name, func, false);
+        } else {
+          obj.attachEvent("on"+name, func);
+        }
+      }
+
+      function load() {
+        addEvent(plugin(), 'fired', function(x) {
+          alert('onfired() from load(): '+x)
+        });
+      }
+
+      function pluginLoaded() {
+        //alert("Plugin loaded!");
+      }
+
+      function addTestEvent() {
+        addEvent(plugin(), 'fired', function(x){
+          alert('onfired(): '+x)
+        });
+      }
+
+      function testEvent() {
+        plugin().testEvent('test stuff');
+      }
+
+      function pluginValid() {
+        alert(plugin().valid);
+      }
+    </script>
+  </head>
+  <body onload="load()">
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <a class="brand" href="#">q3pluggedin</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="span-16">
+          <object id="plugin0" type="application/x-q3plugin" width="800" height="600">
+            <param name="onload" value="pluginLoaded" />
+          </object>
+          <br />
+          <a href="#" onclick="javascript:addTestEvent()">set event handler</a> <br />
+          <a href="#" onclick="javascript:testEvent()">Fire event</a> <br />
+          <a href="#" onclick="javascript:pluginValid()">alert plugin valid</a> <br />
+        </div>
+      </div>
+    </div> <!-- /container -->
+  </body>
+</html>

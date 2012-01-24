@@ -57,11 +57,32 @@ void process_message(msgpipe_msg* msg) {
 	}
 }
 
+int should_shim() {
+	char current_exe[512];
+	char *base_name;
+
+	int len = readlink("/proc/self/exe", current_exe, 512 - 1);
+
+	if (len == -1) {
+		return 0;
+	}
+
+	base_name = basename(current_exe);
+
+	return strstr(base_name, "quake3") != NULL;
+}
+
 void load(void) {
+	// Major hack to avoid conflicts with other processes q3 launches.
+	if (!should_shim()) {
+		return;
+	}
+
+	// Initialize SDL hooks.
 	hooks_sdl_init();
 
 	// Initialize message pipe.
-	g_pipe = msgpipe_open(FIFO_NAME/*, PIPE_READ*/);
+	g_pipe = msgpipe_open(FIFO_NAME, PIPE_READ);
 
 	if (!g_pipe) {
 		fprintf(stderr, "Failed to make event pipe.\n");

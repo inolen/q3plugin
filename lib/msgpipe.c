@@ -71,19 +71,16 @@ int msgpipe_poll(msgpipe* pipe, msgpipe_msg* msg) {
 	// Pump data in from the pipe.
 	msgpipe_pump(pipe);
 
-	// Parse the data we pumped in.
-	while (1) {
-		if (pipe->buflen >= sizeof(msgpipe_msg)) {
-			// Copy message from buffer to input param.
-			memcpy(msg, pipe->buf, sizeof(msgpipe_msg));
-
-			// Remove message from buffer.
-			pipe->buflen -= sizeof(msgpipe_msg);
-			memcpy(pipe->buf, pipe->buf + sizeof(msgpipe_msg), pipe->buflen);
-
-			return 1;
-		}
-
+	if (pipe->buflen < sizeof(msgpipe_msg)) {
 		return 0;
 	}
+
+	// Copy message from buffer to input param.
+	memcpy(msg, pipe->buf, sizeof(msgpipe_msg));
+
+	// Remove message from buffer.
+	pipe->buflen -= sizeof(msgpipe_msg);
+	memcpy(pipe->buf, pipe->buf + sizeof(msgpipe_msg), pipe->buflen);
+
+	return 1;
 }

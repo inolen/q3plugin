@@ -1,5 +1,5 @@
-#ifndef H_Q3Plugin
-#define H_Q3Plugin
+#ifndef Q3PLUGIN_H
+#define Q3PLUGIN_H
 
 #include "PluginWindow.h"
 #include "PluginEvents/AttachedEvent.h"
@@ -7,8 +7,9 @@
 #include "PluginEvents/MouseEvents.h"
 #include "PluginCore.h"
 
-static void Sys_Main(void*);
-static void Sys_GLInit(FB::PluginWindow*);
+extern "C" {
+#include "../lib/msgpipe.h"
+}
 
 FB_FORWARD_PTR(Q3Plugin)
 class Q3Plugin : public FB::PluginCore {
@@ -27,7 +28,8 @@ protected:
 	// FB::PluginCore::isWindowless()
 	virtual bool isWindowless() { return false; }
 
-	void BootstrapGame(FB::PluginWindow*);
+	virtual void LaunchGame(FB::PluginWindow* window) = 0;
+	virtual void CenterMouse(FB::PluginWindow* window) = 0;
 
 	BEGIN_PLUGIN_EVENT_MAP()
 		EVENTTYPE_CASE(FB::KeyDownEvent, onKeyDown, FB::PluginWindow)
@@ -40,16 +42,16 @@ protected:
 	END_PLUGIN_EVENT_MAP()
 
 	/** BEGIN EVENTDEF -- DON'T CHANGE THIS LINE **/
-	virtual bool onKeyDown(FB::KeyDownEvent* evt, FB::PluginWindow*);
-	virtual bool onKeyUp(FB::KeyUpEvent* evt, FB::PluginWindow*);
-	virtual bool onMouseDown(FB::MouseDownEvent* evt, FB::PluginWindow*);
-	virtual bool onMouseUp(FB::MouseUpEvent* evt, FB::PluginWindow*);
-	virtual bool onMouseMove(FB::MouseMoveEvent* evt, FB::PluginWindow*);
-	virtual bool onWindowAttached(FB::AttachedEvent* evt, FB::PluginWindow*);
-	virtual bool onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow*);
+	virtual bool onKeyDown(FB::KeyDownEvent* evt, FB::PluginWindow* window);
+	virtual bool onKeyUp(FB::KeyUpEvent* evt, FB::PluginWindow* window);
+	virtual bool onMouseDown(FB::MouseDownEvent* evt, FB::PluginWindow* window);
+	virtual bool onMouseUp(FB::MouseUpEvent* evt, FB::PluginWindow* window);
+	virtual bool onMouseMove(FB::MouseMoveEvent* evt, FB::PluginWindow* window);
+	virtual bool onWindowAttached(FB::AttachedEvent* evt, FB::PluginWindow* window);
+	virtual bool onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow* window);
 	/** END EVENTDEF -- DON'T CHANGE THIS LINE **/
+
+	msgpipe* pipe_;
 };
 
-
 #endif
-

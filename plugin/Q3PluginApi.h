@@ -1,8 +1,5 @@
-/**********************************************************\
-
-  Auto-generated Q3PluginApi.h
-
-\**********************************************************/
+#ifndef Q3PLUGINAPI_H
+#define Q3PLUGINAPI_H
 
 #include <string>
 #include <sstream>
@@ -10,9 +7,6 @@
 #include "JSAPIAuto.h"
 #include "BrowserHost.h"
 #include "Q3Plugin.h"
-
-#ifndef H_Q3PluginAPI
-#define H_Q3PluginAPI
 
 class Q3PluginApi : public FB::JSAPIAuto
 {
@@ -47,5 +41,4 @@ private:
     std::string m_testString;
 };
 
-#endif // H_Q3PluginApi
-
+#endif

@@ -3,7 +3,6 @@
 #include <SDL.h>
 #include <unistd.h>
 #include "hooks_sdl.h"
-#include "../msgpipe.h"
 
 #define FIFO_NAME "q3plugin"
 

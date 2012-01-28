@@ -5,7 +5,7 @@ include (FindPkgConfig)
 file (GLOB GENERAL RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     shim/[^.]*.c
     shim/[^.]*.h
-    msgpipe.*
+    lib/msgpipe.*
     )
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${GENERAL})

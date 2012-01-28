@@ -3,7 +3,6 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include "main.h"
-#include "../msgpipe.h"
 
 #define FN(ptr,type,name,args) ptr = (type (*)args)dlsym (RTLD_NEXT, name)
 

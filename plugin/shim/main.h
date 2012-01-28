@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "../msgpipe.h"
+#include "../lib/msgpipe.h"
 
 extern msgpipe* g_pipe;
 

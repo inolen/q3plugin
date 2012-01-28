@@ -8,7 +8,7 @@
 #include "PluginCore.h"
 
 extern "C" {
-#include "../lib/msgpipe.h"
+#include "msgpipe.h"
 }
 
 FB_FORWARD_PTR(Q3Plugin)

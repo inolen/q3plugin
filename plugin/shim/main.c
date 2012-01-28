@@ -1,8 +1,9 @@
 #include "main.h"
+#include <limits.h>
 #include <SDL.h>
 #include <unistd.h>
 #include "hooks_sdl.h"
-#include "../lib/msgpipe.h"
+#include "../msgpipe.h"
 
 #define FIFO_NAME "q3plugin"
 
@@ -57,13 +58,23 @@ void process_message(msgpipe_msg* msg) {
 	}
 }
 
-int should_shim() {
-	char current_exe[512];
-	char *base_name;
+char *get_current_exe_path() {
+	static char path[PATH_MAX];
 
-	int len = readlink("/proc/self/exe", current_exe, 512 - 1);
+	int len = readlink("/proc/self/exe", path, PATH_MAX - 1);
 
 	if (len == -1) {
+		return NULL;
+	}
+
+	return path;
+}
+
+int should_shim() {
+	char *current_exe = NULL;
+	char *base_name = NULL;
+
+	if ((current_exe = get_current_exe_path()) == NULL) {
 		return 0;
 	}
 

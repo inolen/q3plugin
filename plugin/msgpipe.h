@@ -54,7 +54,7 @@ typedef struct msgpipe_s {
 
 extern msgpipe* msgpipe_open(const char* name, PIPE_END type);
 extern void msgpipe_close(msgpipe* pipe);
-extern void msgpipe_send(msgpipe* pipe, msgpipe_msg* msg);
+extern int msgpipe_send(msgpipe* pipe, msgpipe_msg* msg);
 extern int msgpipe_poll(msgpipe* pipe, msgpipe_msg* msg);
 
 #endif

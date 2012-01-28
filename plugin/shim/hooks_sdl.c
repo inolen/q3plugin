@@ -1,7 +1,11 @@
+#define _GNU_SOURCE
 #include "hooks_sdl.h"
+#include <dlfcn.h>
 #include <stdio.h>
 #include "main.h"
-#include "../lib/msgpipe.h"
+#include "../msgpipe.h"
+
+#define FN(ptr,type,name,args) ptr = (type (*)args)dlsym (RTLD_NEXT, name)
 
 int (*OG_SDL_PushEvent)(SDL_Event*) = NULL;
 

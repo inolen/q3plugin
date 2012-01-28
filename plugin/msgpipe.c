@@ -1,4 +1,3 @@
-
 #include "msgpipe.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -13,6 +12,10 @@ extern int errno;
 
 msgpipe* msgpipe_open(const char* name, PIPE_END type) {
 	int ret, fd;
+
+	if (name == NULL) {
+		return NULL;
+	}
 
 	errno = 0;
 	if ((ret = mkfifo(name, 0666)) < 0 && errno != EEXIST) {
@@ -39,20 +42,34 @@ msgpipe* msgpipe_open(const char* name, PIPE_END type) {
 }
 
 void msgpipe_close(msgpipe* pipe) {
+	if (pipe == NULL) {
+		return;
+	}
+
 	close(pipe->fd);
 }
 
-void msgpipe_send(msgpipe* pipe, msgpipe_msg* msg) {
+int msgpipe_send(msgpipe* pipe, msgpipe_msg* msg) {
 	int num;
+
+	if (pipe == NULL || msg == NULL) {
+		return -1;
+	}
 
 	if ((num = write(pipe->fd, msg, sizeof(msgpipe_msg)) < 0)) {
 		fprintf(stderr, "Failed to write to pipe, errno %i (fd: %i).\n", errno, pipe->fd);
-		return;
+		return -1;
 	}
+
+	return num;
 }
 
 void msgpipe_pump(msgpipe* pipe) {
 	int num;
+
+	if (pipe == NULL) {
+		return;
+	}
 
 	// We don't want to read more than our current buffer can hold.
 	char* buf = pipe->buf + pipe->buflen;
@@ -68,6 +85,10 @@ void msgpipe_pump(msgpipe* pipe) {
 }
 
 int msgpipe_poll(msgpipe* pipe, msgpipe_msg* msg) {
+	if (pipe == NULL || msg == NULL) {
+		return 0;
+	}
+
 	// Pump data in from the pipe.
 	msgpipe_pump(pipe);
 

@@ -1,15 +1,13 @@
 #ifndef MSGPIPE_H
 #define MSGPIPE_H
 
-typedef enum {
-	PIPE_READ,
-	PIPE_WRITE
-} PIPE_END;
+#include <stdbool.h>
 
 typedef enum {
 	KEYPRESS,
 	MOUSEPRESS,
-	MOUSEMOTION
+	MOUSEMOTION,
+	MOUSELOCK
 } MESSAGE_TYPE;
 
 typedef enum {
@@ -18,6 +16,7 @@ typedef enum {
 	MOUSE_RIGHT
 } MOUSE_BUTTON;
 
+// Plugin -> Shim
 typedef struct msg_keypress {
 	int type;
 	int pressing;
@@ -36,23 +35,34 @@ typedef struct msg_mousemotion {
 	int yrel;
 } msg_mousemotion;
 
+// Shim -> Plugin
+typedef struct msg_mouselock {
+	int type;
+	bool lock;
+} msg_mouselock;
+
 typedef union msgpipe_msg {
 	int type;
 	msg_keypress keypress;
 	msg_mousepress mousepress;
 	msg_mousemotion mousemotion;
+	msg_mouselock mouselock;
 } msgpipe_msg;
 
 typedef struct msgpipe_s {
-	char name[128];
-	int fd;
+	char namer[128];
+	char namew[128];
+
+	// Set inside of open.
+	int fdr;
+	int fdw;
 
 	// This needs to be larger than sizeof(msgpipe_msg)
 	char buf[1024];
 	int buflen;
 } msgpipe;
 
-extern msgpipe* msgpipe_open(const char* name, PIPE_END type);
+extern int msgpipe_open(msgpipe* pipe, const char *name, bool reverse);
 extern void msgpipe_close(msgpipe* pipe);
 extern int msgpipe_send(msgpipe* pipe, msgpipe_msg* msg);
 extern int msgpipe_poll(msgpipe* pipe, msgpipe_msg* msg);

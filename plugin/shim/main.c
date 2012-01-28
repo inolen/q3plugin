@@ -9,7 +9,7 @@
 void __attribute__ ((constructor)) load(void);
 void __attribute__ ((destructor)) unload(void);
 
-msgpipe* g_pipe = NULL;
+msgpipe g_pipe;
 
 void process_message(msgpipe_msg* msg) {
 	SDL_Event event;
@@ -92,14 +92,12 @@ void load(void) {
 	hooks_sdl_init();
 
 	// Initialize message pipe.
-	g_pipe = msgpipe_open(FIFO_NAME, PIPE_READ);
-
-	if (!g_pipe) {
+	if (!msgpipe_open(&g_pipe, FIFO_NAME, true)) {
 		fprintf(stderr, "Failed to make event pipe.\n");
 		return;
 	}
 }
 
 void unload(void) {
-	msgpipe_close(g_pipe);
+	msgpipe_close(&g_pipe);
 }

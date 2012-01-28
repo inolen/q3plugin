@@ -28,6 +28,7 @@ protected:
 	// FB::PluginCore::isWindowless()
 	virtual bool isWindowless() { return false; }
 
+	void ProcessMessage(msgpipe_msg *msg);
 	virtual void LaunchGame(FB::PluginWindow* window) = 0;
 	virtual void CenterMouse(FB::PluginWindow* window) = 0;
 
@@ -51,7 +52,8 @@ protected:
 	virtual bool onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow* window);
 	/** END EVENTDEF -- DON'T CHANGE THIS LINE **/
 
-	msgpipe* pipe_;
+	msgpipe pipe_;
+	bool lockmouse_;
 };
 
 #endif

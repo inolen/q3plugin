@@ -9,15 +9,18 @@
 int (*OG_SDL_PushEvent)(SDL_Event*) = NULL;
 
 SDL_GrabMode SDL_WM_GrabInput(SDL_GrabMode mode) {
-	//static int (*func)(SDL_GrabMode);
-	//FN(func, SDL_GrabMode, "SDL_WM_GrabInput", (SDL_GrabMode));
+	static int locked = SDL_GRAB_OFF;
 
-	/*if (mode != SDL_GrabMode) {
-		mouseLocked = mose == SDL_GRAB_ON;
+    if (mode != SDL_GRAB_QUERY) {
+    	locked = mode == SDL_GRAB_ON;
+
+		msgpipe_msg msg;
+		msg.type = MOUSELOCK;
+		msg.mouselock.lock = locked;
+		msgpipe_send(&g_pipe, &msg);
 	}
 
-	return mouseLocked ? SDL_GRAB_ON : SDL_GRAB_OFF;*/
-	return SDL_GRAB_OFF;
+	return locked;
 }
 
 int SDL_PollEvent(SDL_Event* event) {
@@ -28,7 +31,7 @@ int SDL_PollEvent(SDL_Event* event) {
 	// Poll our own event queue when SDL polls.
 	msgpipe_msg msg;
 
-	while (msgpipe_poll(g_pipe, &msg)) {
+	while (msgpipe_poll(&g_pipe, &msg)) {
 		process_message(&msg);
 	}
 

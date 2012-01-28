@@ -3,7 +3,7 @@
 
 #include "../lib/msgpipe.h"
 
-extern msgpipe* g_pipe;
+extern msgpipe g_pipe;
 
 extern void process_message(msgpipe_msg*);
 

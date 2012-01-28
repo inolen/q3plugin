@@ -35,10 +35,9 @@ void Q3PluginX11::LaunchGame(FB::PluginWindow* window) {
 	dirname(pluginDir);
 	snprintf(shimPath, PATH_MAX, "%s/libq3plugshim.so", pluginDir);
 	setenv("LD_PRELOAD", shimPath, TRUE);
-	m_host->htmlLog(shimPath);
 
 	// Launch game.
-	const char* argv[] = { "/home/inolen/quake3/ioquake3/build/release-linux-i386/ioquake3.i386", NULL };
+	const char* argv[] = { "/home/inolen/quake3/ioquake3/build/release-linux-i386/ioquake3.i386", "+r_fullscreen", "0", NULL };
 	pid_t pid;
 	int status;
 	g_spawn_async(NULL, (gchar**)argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &pid, NULL);
@@ -46,19 +45,24 @@ void Q3PluginX11::LaunchGame(FB::PluginWindow* window) {
 	// The pipes are sycnchronous and will block until both ends are open. In order to avoid
 	// deadlocking, we need to start the process in a new thread (which will open one side
 	// of the pipe during the shim initialization) and then open our end of the pipe.
-	pipe_ = msgpipe_open(FIFO_NAME, PIPE_WRITE);
-
-	if (!pipe_) {
+	if (msgpipe_open(&pipe_, FIFO_NAME, false) < 0) {
 		fprintf(stderr, "Failed to make event pipe.\n");
 		return;
 	}
 
 	// Wait for the process to end and then close it 100%.
-	waitpid(pid, &status, 0);
+	while (!waitpid(pid, &status, WNOHANG)) {
+		msgpipe_msg msg;
+
+		while (msgpipe_poll(&pipe_, &msg)) {
+			ProcessMessage(&msg);
+		}
+	}
+
 	g_spawn_close_pid(pid);
 
 	// Close message pipe.
-	msgpipe_close(pipe_);
+	msgpipe_close(&pipe_);
 }
 
 void Q3PluginX11::CenterMouse(FB::PluginWindow* window) {

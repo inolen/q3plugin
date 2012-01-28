@@ -10,35 +10,59 @@
 
 extern int errno;
 
-msgpipe* msgpipe_open(const char* name, PIPE_END type) {
-	int ret, fd;
-
-	if (name == NULL) {
-		return NULL;
-	}
-
+static int _msgpipe_open_read(msgpipe* pipe) {
 	errno = 0;
-	if ((ret = mkfifo(name, 0666)) < 0 && errno != EEXIST) {
-		fprintf(stderr, "Failed to make pipe '%s'.\n", name);
-		return NULL;
+	if (mkfifo(pipe->namer, 0666) < 0 && errno != EEXIST) {
+		return -1;
 	}
 
-	if ((fd = open(name, type == PIPE_READ ? O_RDONLY : O_WRONLY)) < 0) {
-		fprintf(stderr, "Failed to open pipe '%s'.\n", name);
-		return NULL;
+	if ((pipe->fdr = open(pipe->namer, O_RDONLY)) < 0) {
+		return -1;
 	}
 
 	// After we've successfully opened, set the read pipe to non-blocking.
-	if (type == PIPE_READ) {
-		fcntl(fd, F_SETFL, O_RDONLY | O_NONBLOCK);
+	fcntl(pipe->fdr, F_SETFL, O_RDONLY | O_NONBLOCK);
+
+	return 0;
+}
+
+static int _msgpipe_open_write(msgpipe* pipe) {
+	// Create/open write pipe.
+	errno = 0;
+	if (mkfifo(pipe->namew, 0666) < 0 && errno != EEXIST) {
+		return -1;
 	}
 
-	msgpipe* pipe = (msgpipe*)malloc(sizeof(msgpipe));
-	memset(pipe, 0, sizeof(msgpipe));
-	snprintf(pipe->name, sizeof(pipe->name), "%s", name);
-	pipe->fd = fd;
+	if ((pipe->fdw = open(pipe->namew, O_WRONLY)) < 0) {
+		return -1;
+	}
 
-	return pipe;
+	return 0;
+}
+
+/*
+ * Reverse is a bit of a confusing term. Named pipes offer half-duplex communication,
+ * so we open two pipes for full-duplex. The reverse flag lets the code open the
+ * correct pipe, in the correct order on both sides so we avoid deadlock. One side will
+ * need to specify false, one will need to specify true.
+ */
+int msgpipe_open(msgpipe* pipe, const char *name, bool reverse) {
+	if (pipe == NULL || name == NULL) {
+		return -1;
+	}
+
+	snprintf(pipe->namer, sizeof(pipe->namer), "%s%i", name, reverse);
+	snprintf(pipe->namew, sizeof(pipe->namew), "%s%i", name, !reverse);
+
+	if ((!reverse && (_msgpipe_open_read(pipe) < 0 || _msgpipe_open_write(pipe) < 0)) ||
+	    (reverse && (_msgpipe_open_write(pipe) < 0 || _msgpipe_open_read(pipe) < 0))) {
+		msgpipe_close(pipe);
+		return -1;
+	}
+
+	pipe->buflen = 0;
+
+	return 0;
 }
 
 void msgpipe_close(msgpipe* pipe) {
@@ -46,7 +70,8 @@ void msgpipe_close(msgpipe* pipe) {
 		return;
 	}
 
-	close(pipe->fd);
+	close(pipe->fdr);
+	close(pipe->fdw);
 }
 
 int msgpipe_send(msgpipe* pipe, msgpipe_msg* msg) {
@@ -56,8 +81,7 @@ int msgpipe_send(msgpipe* pipe, msgpipe_msg* msg) {
 		return -1;
 	}
 
-	if ((num = write(pipe->fd, msg, sizeof(msgpipe_msg)) < 0)) {
-		fprintf(stderr, "Failed to write to pipe, errno %i (fd: %i).\n", errno, pipe->fd);
+	if ((num = write(pipe->fdw, msg, sizeof(msgpipe_msg)) < 0)) {
 		return -1;
 	}
 
@@ -75,8 +99,7 @@ void msgpipe_pump(msgpipe* pipe) {
 	char* buf = pipe->buf + pipe->buflen;
 	int length = sizeof(char) * sizeof(pipe->buf) - pipe->buflen;
 
-	if ((num = read(pipe->fd, buf, length)) == -1 && errno != EAGAIN) {
-		fprintf(stderr, "Failed to read from pipe, errno %i.", errno);
+	if ((num = read(pipe->fdr, buf, length)) == -1 && errno != EAGAIN) {
 		return;
 	} else if (num > 0) {
 		// Update our current buffer size on a successful read.

@@ -64,6 +64,7 @@ var init = function () {
       res.send(servers);
     });
   });
+
   app.get('/server', function (req, res, next) {
     var address = req.query.address,
       port = req.query.port;

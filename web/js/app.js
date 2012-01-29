@@ -7,7 +7,9 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
   var Q3P = window.Q3P = typeof (window.Q3P) === 'undefined' ? {} : window.Q3P;
 
   Q3P.bootstrap = function () {
-    Q3P.appView = new Q3P.AppView({el: 'body'});
+    var router = new Q3P.AppRouter();
+
+    Backbone.history.start({ root: '/index.html' });
   };
 
   // Replace q3-style colored strings with the appropriate HTML.
@@ -15,9 +17,9 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
     // White isn't outputted full white since we're on a white background.
     var colors = ['#000', '#ff0000', '#00ff00', '#ffff00', '#0000ff', '#00ffff', '#ff00ff', '#ccc'],
       replace = function (str, m1, m2) {
-        var index = parseInt(m1);
+        var index = parseInt(m1, 10);
 
-        if (index === NaN || index > 7) {
+        if (isNaN(index) || index > 7) {
           index = 7;
         }
 
@@ -86,11 +88,13 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
     }
   });
 
-  Q3P.ServerBrowserView = Backbone.View.extend({
-    tagName: 'table',
+  Q3P.BrowserView = Backbone.View.extend({
+    id: 'browser-view',
 
     initialize: function () {
       _.bindAll(this, 'render');
+
+      this.table = $('<table>');
 
       this.servers = new Q3P.ServerList();
       this.servers.bind('add', this.add, this);
@@ -100,54 +104,68 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
     },
 
     add: function (server) {
-      var view = new Q3P.ServerView({model: server});
+      var self = this,
+        view = new Q3P.ServerView({model: server});
 
       // Trigger update event for tablesorter.
       view.bind('change', function () {
-        $(this.el).trigger('update');
+        $(self.table).trigger('update');
       });
 
-      $(this.el).find('tbody').append(view.render().el);
+      $(this.table).find('tbody').append(view.render().el);
     },
 
-    addAll: function(servers) {
+    addAll: function (servers) {
       servers.each(this.add, this);
     },
 
     render: function () {
-      $(this.el).append('<thead><tr><th>Name</th><th>Map</th><th>Players</th><th>Game</th></tr></thead>');
-      $(this.el).append('<tbody>');
-      $(this.el).tablesorter();
+      $(this.el)
+        .append('<h1>Server browser</h1>')
+        .append('<div class="well">\
+                   <input type="text" value="master.ioquake3.org:27950">\
+                   <button type="button" class="btn primary">Refresh</button>\
+                 </div>')
+        .append(this.table);
+
+      $(this.table)
+        .append('<thead><tr><th>Name</th><th>Map</th><th>Players</th><th>Game</th></tr></thead><tbody></tbody>')
+        .tablesorter();
+
       return this;
     }
   });
 
   Q3P.GameView = Backbone.View.extend({
+    id: 'game-view',
+
     render: function () {
       var $object = $('<object>', {
         id: 'plugin0',
         type: 'application/x-q3plugin',
         width: 800,
         height: 600
-      })
+      });
       //append( param(name='onload', value='pluginLoaded') )
       $(this.el).append($object);
       return this;
     }
   });
 
-  Q3P.AppView = Backbone.View.extend({
-    initialize: function () {
-      _.bindAll(this, 'render');
-      this.render();
+  Q3P.AppRouter = Backbone.Router.extend({
+    routes: {
+      'browser': 'browser',
+      '': 'game'
     },
 
-    render: function () {
-      var browserView = new Q3P.ServerBrowserView();
-      $('#content').append(browserView.render().el);
+    browser: function () {
+      var browserView = new Q3P.BrowserView();
+      $('#content').html(browserView.render().el);
+    },
 
+    game: function () {
       var gameView = new Q3P.GameView();
-      $('#content').append(gameView.render().el);
+      $('#content').html(gameView.render().el);
     }
   });
 }());

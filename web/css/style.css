@@ -6,7 +6,28 @@
   margin-bottom: 60px;
 }
 
+.settings {
+  margin-bottom: 20px;
+}
+
+#game-view #executable {
+  float: left;
+  margin-right: 10px;
+  width: 860px;
+}
+
+#browser-view #masterserver {
+  float: left;
+  margin-right: 10px;
+  width: 840px;
+}
+
 object {
   display: block;
   margin: 0 auto;
+}
+
+#browser-view tr:hover td {
+  cursor: pointer;
+  background-color: #f5f5f5;
 }

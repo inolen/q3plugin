@@ -38,7 +38,7 @@ void Q3Plugin::Connect(std::string server) {
 	msgpipe::message msg;
 	msg.type = msgpipe::msgs::GAMECMD;
 	strncpy(msg.gamecmd.text, std::string("connect ").append(server).c_str(), sizeof(msg.gamecmd.text));
-	fdxpipe_.send(msg);
+	msgpipe_.send(msg);
 }
 
 void Q3Plugin::ProcessMessage(msgpipe::message& msg) {
@@ -46,7 +46,7 @@ void Q3Plugin::ProcessMessage(msgpipe::message& msg) {
 
 void Q3Plugin::RunMessagePump() {
 	try {
-		if (!fdxpipe_.open(std::string(FIFO_NAME), false)) {
+		if (!msgpipe_.open(std::string(FIFO_NAME), false)) {
 			fprintf(stderr, "Failed to make event pipe.\n");
 			return;
 		}
@@ -54,7 +54,7 @@ void Q3Plugin::RunMessagePump() {
 		while (true) {
 			msgpipe::message msg;
 
-			while (fdxpipe_.poll(msg)) {
+			while (msgpipe_.poll(msg)) {
 				ProcessMessage(msg);
 			}
 
@@ -73,7 +73,7 @@ void Q3Plugin::StopMessagePump() {
 	pumpThread_.interrupt();
 
 	// Close message pipe.
-	fdxpipe_.close();
+	msgpipe_.close();
 
 	pumpThread_.join();
 }

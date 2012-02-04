@@ -5,7 +5,6 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
   'use strict';
 
   var Q3P = window.Q3P = typeof (window.Q3P) === 'undefined' ? {} : window.Q3P;
-  var jade = require('jade');
 
   Q3P.Server = Backbone.Model.extend({
     defaults: function () {
@@ -22,7 +21,7 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
         address = this.get('address'),
         port = this.get('port');
 
-      Q3P.plugin.getServerInfo(address, port, function (err, info) {
+      Q3P.getPlugin().getServerInfo(address, port, function (err, info) {
         if (!err) {
           self.set(info);
         }
@@ -37,7 +36,12 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
       var self = this;
 
       if (method === 'read') {
-        Q3P.plugin.getAllServers("master.ioquake3.org", 27950, function (err, servers) {
+        var masterserver = Q3P.AppSettings.get('masterserver'),
+          split = masterserver.split(':'),
+          address = split[0],
+          port = split[1];
+
+        Q3P.getPlugin().getAllServers(address, port, function (err, servers) {
           if (err) {
             return options.error(err);
           }
@@ -83,33 +87,35 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
   Q3P.BrowserView = Backbone.View.extend({
     id: 'browser-view',
 
-    template: "div.row.settings\n\
-  div.span16\n\
-    div.clearfix\n\
-      input#masterserver.xlarge(type='text', name='masterserver', placeholder='Enter the address of a master server', value=masterserver)\n\
-      button.btn.primary(type='button') Refresh\n\
-div.row\n\
-  div.span16\n\
-    table.zebra-striped#servers\n\
-      thead\n\
-        tr\n\
-          th Name\n\
-          th Map\n\
-          th Players\n\
-          th Game\n\
-      tbody",
+    template: '<div class="padded">' +
+        '<div class="settings">' +
+          '<h2>Browse servers</h2>' +
+          '<div class="clearfix">' +
+            '<input id="masterserver" class="xlarge" type="text" name="masterserver" placeholder="Enter the address of a master server" value="<%= masterserver %>" />' +
+            '<button class="btn primary" type="button">Refresh</button>' +
+          '</div>' +
+        '</div>' +
+        '<table id="servers" class="table zebra-striped">' +
+          '<thead>' +
+            '<tr>' +
+              '<th>Name</th>' +
+              '<th>Map</th>' +
+              '<th>Players</th>' +
+              '<th>Game</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody></tbody>' +
+        '</table>' +
+      '</div>',
 
     events: {
       'click button': 'refresh'
     },
 
     initialize: function () {
-      this.templateCompiled = jade.compile(this.template);
-
       this.servers = new Q3P.ServerList();
       this.servers.bind('add', this.add, this);
       this.servers.bind('reset', this.reset, this);
-
       this.servers.fetch();
     },
 
@@ -143,14 +149,12 @@ div.row\n\
     },
 
     render: function () {
-      var html = this.templateCompiled({
+      var html = _.template(this.template, {
         masterserver: Q3P.AppSettings.get('masterserver')
       });
 
-      $(this.el)
-        .html(html)
-        .find('#servers')
-        .tablesorter();
+      $(Q3P.getPlugin()).width(0).height(0);
+      $(this.el).html(html).find('#servers').tablesorter();
 
       return this;
     }

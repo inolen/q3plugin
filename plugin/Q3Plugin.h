@@ -52,7 +52,7 @@ protected:
 	virtual bool onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow* window);
 	/** END EVENTDEF -- DON'T CHANGE THIS LINE **/
 
-	msgpipe::fdxpipe fdxpipe_;
+	msgpipe::fdxpipe msgpipe_;
 
 private:
 	void RunMessagePump();

@@ -5,7 +5,6 @@ jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
   'use strict';
 
   var Q3P = window.Q3P = typeof (window.Q3P) === 'undefined' ? {} : window.Q3P;
-  var jade = require('jade');
 
   Q3P.bootstrap = function () {
     var router = new Q3P.AppRouter();
@@ -14,7 +13,6 @@ jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
       Backbone.history.start({ root: '/index.html' });
     };
 
-    Q3P.plugin = document.getElementById('plugin');
     Q3P.AppSettings.fetch({ success: finish, error: finish }, { silent: true });
   };
 
@@ -33,6 +31,10 @@ jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
       };
 
     return text.replace(/\^(.)(.*?)(?=\^|$)/g, replace);
+  };
+
+  Q3P.getPlugin = function () {
+    return document.getElementById('plugin');
   };
 
   Q3P.AppSettings = new (Backbone.Model.extend({
@@ -69,11 +71,11 @@ jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
   Q3P.AppRouter = Backbone.Router.extend({
     routes: {
       'game?connect=:server': 'game',
-      'browser': 'browser',
+      'servers': 'servers',
       '': 'game'
     },
 
-    browser: function () {
+    servers: function () {
       var browserView = new Q3P.BrowserView();
       $('#content').html(browserView.render().el);
     },

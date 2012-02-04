@@ -6,7 +6,7 @@
 
 #define FIFO_NAME "q3plugin"
 
-void Cmd_ExecuteString(const char*);
+extern "C" void Cmd_ExecuteString(const char*);
 int (*OG_SDL_PushEvent)(SDL_Event*) = NULL;
 static void process_messages();
 

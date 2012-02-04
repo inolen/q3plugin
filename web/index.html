@@ -8,8 +8,6 @@
     <script type="text/javascript" src="./js/support/jquery.tablesorter.min.js"></script>
     <script type="text/javascript" src="./js/support/underscore-min.js"></script>
     <script type="text/javascript" src="./js/support/backbone-min.js"></script>
-    <script type="text/javascript" src="./js/support/jade.js"></script>
-    <script type="text/javascript" src="./js/support/jade-shim.js"></script>
     <script type="text/javascript" src="./js/browser.js"></script>
     <script type="text/javascript" src="./js/game.js"></script>
     <script type="text/javascript" src="./js/app.js"></script>
@@ -21,24 +19,38 @@
     </script>
   </head>
   <body>
-    <div class="topbar">
-      <div class="fill">
-        <div class="container">
-          <a href="#" class="brand">q3plugin</a>
-          <ul class="nav">
-            <li><a href="#">Game</a></li>
-            <li><a href="#browser">Servers</a></li>
+    <a href="http://github.com/inolen/q3plugin"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub"></a>
+    <div class="container">
+      <header class="jumbotron masthead" style="display: none;">
+        <div class="inner">
+          <p>Simple and flexible HTML, CSS, and Javascript for popular user interface components and interactions.</p>
+          <p class="download-info">
+            <a class="btn btn-primary btn-large" href="https://github.com/inolen/q3plugin">View project on GitHub</a>
+            <a class="btn btn-large" href="assets/bootstrap.zip">Install plugin</a>
+          </p>
         </div>
-      </div>
-    </div>
-    <div id="plugin-wrapper" class="container">
+      </header>
+      <header id="overview" class="jumbotron masthead">
+        <h1>quake3, plugged in</h1>
+        <p class="lead">Simple cross-browser, cross-platform plugin bringing the quake3 engine to the browser.</p>
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+                <li><a href="#">Game</a></li>
+                <li><a href="#servers">Servers</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </header>
       <div class="row">
-        <div class="span16">
-          <object id="plugin" type="application/x-q3plugin" width="800" height="600"></object>
+        <div class="span12">
+          <object id="plugin" type="application/x-q3plugin"></object>
+          <div id="content">
+          </div>
         </div>
       </div>
-    </div>
-    <div id="content" class="container">
     </div>
   </body>
 </html>

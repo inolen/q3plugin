@@ -48,8 +48,13 @@ Q3PluginPtr Q3PluginApi::getPlugin() {
 	return plugin;
 }
 
-void Q3PluginApi::connect(const std::string& addr) {
-	getPlugin()->Connect(addr);
+void Q3PluginApi::connect(const std::string& addr, const unsigned short port) {
+	std::ostringstream server;
+	server << addr << ":" << port;
+
+	m_host->htmlLog(server.str());
+
+	getPlugin()->Connect(server.str());
 }
 
 void Q3PluginApi::getAllServers_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {

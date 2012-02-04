@@ -89,7 +89,7 @@ bool Q3PluginX11::onKeyDown(FB::KeyDownEvent* evt, FB::PluginWindow* window) {
 		msg.sdlevent.event.type = SDL_KEYDOWN;
 		msg.sdlevent.event.key.keysym.sym = (SDLKey)key;
 		msg.sdlevent.event.key.keysym.unicode = key;
-		fdxpipe_.send(msg);
+		msgpipe_.send(msg);
 	}
 
 	return true;
@@ -104,7 +104,7 @@ bool Q3PluginX11::onKeyUp(FB::KeyUpEvent* evt, FB::PluginWindow* window) {
 		msg.sdlevent.event.type = SDL_KEYUP;
 		msg.sdlevent.event.key.keysym.sym = (SDLKey)key;
 		msg.sdlevent.event.key.keysym.unicode = key;
-		fdxpipe_.send(msg);
+		msgpipe_.send(msg);
 	}
 
 	return true;
@@ -129,7 +129,7 @@ bool Q3PluginX11::onMouseDown(FB::MouseDownEvent* evt, FB::PluginWindow* window)
 			break;
 	}
 
-	fdxpipe_.send(msg);
+	msgpipe_.send(msg);
 
 	return true;
 }
@@ -153,7 +153,7 @@ bool Q3PluginX11::onMouseUp(FB::MouseUpEvent* evt, FB::PluginWindow* window) {
 			break;
 	}
 
-	fdxpipe_.send(msg);
+	msgpipe_.send(msg);
 
 	return true;
 }
@@ -166,7 +166,7 @@ bool Q3PluginX11::onMouseMove(FB::MouseMoveEvent* evt, FB::PluginWindow* window)
 		msg.sdlevent.event.type = SDL_MOUSEMOTION;
 		msg.sdlevent.event.motion.xrel = evt->m_x - window->getWindowWidth()/2;
 		msg.sdlevent.event.motion.yrel = evt->m_y - window->getWindowHeight()/2;
-		fdxpipe_.send(msg);
+		msgpipe_.send(msg);
 
 		// Center the mouse.
 		FB::PluginWindowX11 *window = dynamic_cast<FB::PluginWindowX11*>(GetWindow());

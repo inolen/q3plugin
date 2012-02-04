@@ -1,14 +1,65 @@
 body {
-  padding-top: 60px;
+  background: #202020 url('../img/bg.jpg') no-repeat center top;
 }
 
-#plugin-wrapper {
-  margin-bottom: 20px;
+/* Jumbotrons
+-------------------------------------------------- */
+.jumbotron {
+  position: relative;
+}
+
+.jumbotron h1 {
+  margin-bottom: 9px;
+  font-size: 54px;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.jumbotron p {
+  margin-bottom: 18px;
+  font-weight: 300;
+}
+
+.jumbotron .btn-large {
+  font-size: 20px;
+  font-weight: normal;
+  padding: 14px 24px;
+  margin-right: 10px;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+}
+
+.masthead {
+  padding-bottom: 0;
+  margin-bottom: 9px;
+}
+
+.masthead h1 {
+  color: #ddd;
+}
+
+.masthead p {
+  color: #aaa;
+}
+
+/* Other
+-------------------------------------------------- */
+#content .padded {
+  padding: 20px;
+  height: 691px;
+  background: #fff;
+}
+
+body {
+  padding-top: 20px;
+  overflow: hidden;
 }
 
 object {
   display: block;
-  margin: 0 auto;
+  padding: 5px;
+  background: #111;
 }
 
 .settings {
@@ -17,11 +68,14 @@ object {
 
 #browser-view #masterserver {
   float: left;
-  margin-right: 10px;
-  width: 840px;
+  width: 92%;
 }
 
-#browser-view tr:hover td {
+#browser-view .btn {
+  float: right;
+}
+
+#servers tr:hover td {
   cursor: pointer;
-  background-color: #f5f5f5;
+  background-color: #fafafa;
 }

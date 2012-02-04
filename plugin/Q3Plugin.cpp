@@ -1,7 +1,13 @@
 #include "Q3Plugin.h"
+#include <assert.h>
+#include <boost/filesystem/operations.hpp>
 #include <SDL.h>
 #include <unistd.h>
 #include "Q3PluginApi.h"
+
+#define FIFO_NAME "q3plugin"
+
+namespace fs = boost::filesystem;
 
 void Q3Plugin::StaticInitialize() {
 }
@@ -9,10 +15,12 @@ void Q3Plugin::StaticInitialize() {
 void Q3Plugin::StaticDeinitialize() {
 }
 
-Q3Plugin::Q3Plugin() {
+Q3Plugin::Q3Plugin() : gameArgs_(NULL) {
 }
 
 Q3Plugin::~Q3Plugin() {
+	//boost::interprocess::named_mutex::remove("q3plugin");
+
 	// This is optional, but if you reset m_api (the shared_ptr to your JSAPI
 	// root object) and tell the host to free the retained JSAPI objects then
 	// unless you are holding another shared_ptr reference to your JSAPI object
@@ -26,99 +34,96 @@ FB::JSAPIPtr Q3Plugin::createJSAPI() {
 	return boost::make_shared<Q3PluginApi>(FB::ptr_cast<Q3Plugin>(shared_from_this()), m_host);
 }
 
-void Q3Plugin::ProcessMessage(msgpipe_msg *msg) {
-	if (msg->type == MOUSELOCK) {
-		lockmouse_ = msg->mouselock.lock;
+void Q3Plugin::Connect(std::string server) {
+	msgpipe::message msg;
+	msg.type = msgpipe::msgs::GAMECMD;
+	strncpy(msg.gamecmd.text, std::string("connect ").append(server).c_str(), sizeof(msg.gamecmd.text));
+	fdxpipe_.send(msg);
+}
+
+void Q3Plugin::ProcessMessage(msgpipe::message& msg) {
+}
+
+void Q3Plugin::RunMessagePump() {
+	try {
+		if (!fdxpipe_.open(std::string(FIFO_NAME), false)) {
+			fprintf(stderr, "Failed to make event pipe.\n");
+			return;
+		}
+
+		while (true) {
+			msgpipe::message msg;
+
+			while (fdxpipe_.poll(msg)) {
+				ProcessMessage(msg);
+			}
+
+			boost::this_thread::sleep(boost::posix_time::milliseconds(1000 / 60));
+		}
+	}
+	catch (boost::thread_interrupted const&) {
 	}
 }
 
-bool Q3Plugin::onKeyDown(FB::KeyDownEvent* evt, FB::PluginWindow* window) {
-	if (evt->m_os_key_code >= 0 && evt->m_os_key_code <= 255) {
-		msgpipe_msg msg;
-		msg.type = KEYPRESS;
-		msg.keypress.pressing = true;
-		msg.keypress.key = evt->m_os_key_code;
-		msgpipe_send(&pipe_, &msg);
-	}
-
-	return true;
+void Q3Plugin::StartMessagePump() {
+	pumpThread_ = boost::thread(&Q3Plugin::RunMessagePump, this);
 }
 
-bool Q3Plugin::onKeyUp(FB::KeyUpEvent* evt, FB::PluginWindow* window) {
-	if (evt->m_os_key_code >= 0 && evt->m_os_key_code <= 255) {
-		msgpipe_msg msg;
-		msg.type = KEYPRESS;
-		msg.keypress.pressing = false;
-		msg.keypress.key = evt->m_os_key_code;
-		msgpipe_send(&pipe_, &msg);
-	}
+void Q3Plugin::StopMessagePump() {
+	pumpThread_.interrupt();
 
-	return true;
-}
+	// Close message pipe.
+	fdxpipe_.close();
 
-bool Q3Plugin::onMouseDown(FB::MouseDownEvent* evt, FB::PluginWindow* window) {
-	msgpipe_msg msg;
-	msg.type = MOUSEPRESS;
-	msg.mousepress.pressing = true;
-
-	switch (evt->m_Btn) {
-		case 0:
-			msg.mousepress.button = MOUSE_LEFT;
-			break;
-		case 1:
-			msg.mousepress.button = MOUSE_MIDDLE;
-			break;
-		case 2:
-			msg.mousepress.button = MOUSE_RIGHT;
-			break;
-	}
-
-	msgpipe_send(&pipe_, &msg);
-
-	return true;
-}
-
-bool Q3Plugin::onMouseUp(FB::MouseUpEvent* evt, FB::PluginWindow* window) {
-	msgpipe_msg msg;
-	msg.type = MOUSEPRESS;
-	msg.mousepress.pressing = false;
-
-	switch (evt->m_Btn) {
-		case 0:
-			msg.mousepress.button = MOUSE_LEFT;
-			break;
-		case 1:
-			msg.mousepress.button = MOUSE_MIDDLE;
-			break;
-		case 2:
-			msg.mousepress.button = MOUSE_RIGHT;
-			break;
-	}
-
-	msgpipe_send(&pipe_, &msg);
-
-	return true;
-}
-
-bool Q3Plugin::onMouseMove(FB::MouseMoveEvent* evt, FB::PluginWindow* window) {
-	if (lockmouse_) {
-		msgpipe_msg msg;
-		msg.type = MOUSEMOTION;
-		msg.mousemotion.xrel = evt->m_x - window->getWindowWidth()/2;
-		msg.mousemotion.yrel = evt->m_y - window->getWindowHeight()/2;
-		msgpipe_send(&pipe_, &msg);
-
-		CenterMouse(window);
-	}
-
-	return true;
+	pumpThread_.join();
 }
 
 bool Q3Plugin::onWindowAttached(FB::AttachedEvent* evt, FB::PluginWindow* window) {
-	boost::thread t(boost::bind(&Q3Plugin::LaunchGame, this, window));
+	// Load ioquake3 from the same directory as the plugin.
+	fs::path p(getFSPath());
+	std::ostringstream gamePath;
+	gamePath << p.parent_path() << "/ioquake3";
+
+	gameArgs_ = (char**)malloc(sizeof(char*) * 10);
+	memset(gameArgs_, 0, sizeof(char*) * 10);
+
+	gameArgs_[0] = strdup(gamePath.str().c_str());
+	gameArgs_[1] = strdup("+r_fullscreen");
+	gameArgs_[2] = strdup("0");
+	gameArgs_[3] = strdup("+r_mode");
+	gameArgs_[4] = strdup("-1");
+	gameArgs_[5] = strdup("+r_customWidth");
+	gameArgs_[6] = (char*)malloc(sizeof(char) * 8);
+	snprintf(gameArgs_[6], 8, "%i", window->getWindowWidth());
+	gameArgs_[7] = strdup("+r_customHeight");
+	gameArgs_[8] = (char*)malloc(sizeof(char) * 8);
+	snprintf(gameArgs_[8], 8, "%i", window->getWindowHeight());
+
+	// Run the message pump.
+	StartMessagePump();
+
+	LaunchGame(9, gameArgs_);
+
 	return true;
 }
 
 bool Q3Plugin::onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow* window) {
+	ShutdownGame();
+
+	// Kill the message pump.
+	StopMessagePump();
+
+	// Free up arguments.
+	if (gameArgs_ != NULL) {
+		char** p = gameArgs_;
+
+		while (*p != NULL) {
+			free(*p);
+			p++;
+		}
+
+		free(gameArgs_);
+	}
+
 	return false;
 }

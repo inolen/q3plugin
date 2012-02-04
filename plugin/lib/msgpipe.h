@@ -1,70 +1,74 @@
 #ifndef MSGPIPE_H
 #define MSGPIPE_H
 
-#include <stdbool.h>
+#include <string>
+#include <SDL.h>
 
+namespace msgpipe {
+
+// Message types.
+namespace msgs {
 typedef enum {
-	KEYPRESS,
-	MOUSEPRESS,
-	MOUSEMOTION,
+	SDLEVENT,
+	GAMECMD,
 	MOUSELOCK
-} MESSAGE_TYPE;
+} types;
+}
 
-typedef enum {
-	MOUSE_LEFT,
-	MOUSE_MIDDLE,
-	MOUSE_RIGHT
-} MOUSE_BUTTON;
+// Messages sent from the plugin -> shim.
+typedef struct sdlevent_s {
+	int       type;
+	SDL_Event event;
+} sdlevent_t;
 
-// Plugin -> Shim
-typedef struct msg_keypress {
-	int type;
-	int pressing;
-	int key;
-} msg_keypress;
+typedef struct gamecmd_s {
+	int  type;
+	char text[128];
+} gamecmd_t;
 
-typedef struct msg_mousepress {
-	int type;
-	int pressing;
-	int button;
-} msg_mousepress;
-
-typedef struct msg_mousemotion {
-	int type;
-	int xrel;
-	int yrel;
-} msg_mousemotion;
-
-// Shim -> Plugin
-typedef struct msg_mouselock {
-	int type;
+// Messages sent from the shim -> plugin.
+typedef struct mouselock_s {
+	int  type;
 	bool lock;
-} msg_mouselock;
+} mouselock_t;
 
-typedef union msgpipe_msg {
-	int type;
-	msg_keypress keypress;
-	msg_mousepress mousepress;
-	msg_mousemotion mousemotion;
-	msg_mouselock mouselock;
-} msgpipe_msg;
+typedef union message {
+	int         type;
+	sdlevent_t  sdlevent;
+	gamecmd_t   gamecmd;
+	mouselock_t mouselock;
+} message;
 
-typedef struct msgpipe_s {
-	char namer[128];
-	char namew[128];
+// Half-duplex pipe.
+class hdxpipe {
+public:
+	bool open(const std::string& name, bool read);
+	int  send(const message& msg);
+	bool poll(message& msg);
+	void close();
 
-	// Set inside of open.
-	int fdr;
-	int fdw;
+private:
+	void pump();
 
-	// This needs to be larger than sizeof(msgpipe_msg)
-	char buf[1024];
-	int buflen;
-} msgpipe;
+	std::string name_;
+	int  fd_;
+	char buf_[1024]; // This needs to be larger than sizeof(MSGPipe_Message)
+	int  buflen_;
+};
 
-extern int msgpipe_open(msgpipe* pipe, const char *name, bool reverse);
-extern void msgpipe_close(msgpipe* pipe);
-extern int msgpipe_send(msgpipe* pipe, msgpipe_msg* msg);
-extern int msgpipe_poll(msgpipe* pipe, msgpipe_msg* msg);
+// Full-duplex pipe.
+class fdxpipe {
+public:
+	bool open(const std::string& name, bool reverse);
+	int  send(const message& msg);
+	bool poll(message& msg);
+	void close();
+
+private:
+	hdxpipe piper_;
+	hdxpipe pipew_;
+};
+
+}
 
 #endif

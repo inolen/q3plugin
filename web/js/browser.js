@@ -10,30 +10,41 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
   Q3P.Server = Backbone.Model.extend({
     defaults: function () {
       return {
+        game: 'N/A',
         hostname: 'N/A',
         mapname: 'N/A',
         clients: 0,
-        sv_maxclients: 0,
-        game: 'N/A'
+        maxclients: 0
       };
     },
     initialize: function () {
-      var self = this;
+      var self = this,
+        address = this.get('address'),
+        port = this.get('port');
 
-      $.get(Q3P.api + '/info', {
-        address: this.get('address'),
-        port: this.get('port')
-      }, function (data) {
-        self.set(data);
-      }, 'json');
+      Q3P.plugin.getServerInfo(address, port, function (err, info) {
+        if (!err) {
+          self.set(info);
+        }
+      });
     },
   });
 
   Q3P.ServerList = Backbone.Collection.extend({
     model: Q3P.Server,
 
-    url: function () {
-      return Q3P.api + '/servers?master=' + Q3P.AppSettings.get('masterserver');
+    sync: function (method, model, options) {
+      var self = this;
+
+      if (method === 'read') {
+        Q3P.plugin.getAllServers("master.ioquake3.org", 27950, function (err, servers) {
+          if (err) {
+            return options.error(err);
+          }
+
+          options.success(servers);
+        });
+      }
     }
   });
 
@@ -60,7 +71,7 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
         .empty()
         .append('<td>' + Q3P.colorize(this.model.get('hostname')) + '</td>')
         .append('<td>' + this.model.get('mapname') + '</td>')
-        .append('<td>' + this.model.get('clients') + '/' + this.model.get('sv_maxclients') + '</td>')
+        .append('<td>' + this.model.get('clients') + '/' + this.model.get('maxclients') + '</td>')
         .append('<td>' + this.model.get('game') + '</td>');
 
       this.trigger('change');

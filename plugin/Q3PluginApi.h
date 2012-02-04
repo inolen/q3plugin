@@ -11,34 +11,20 @@
 class Q3PluginApi : public FB::JSAPIAuto
 {
 public:
-    Q3PluginApi(const Q3PluginPtr& plugin, const FB::BrowserHostPtr& host);
-    virtual ~Q3PluginApi();
+	Q3PluginApi(const Q3PluginPtr& plugin, const FB::BrowserHostPtr& host);
+	virtual ~Q3PluginApi();
 
-    Q3PluginPtr getPlugin();
+	Q3PluginPtr getPlugin();
 
-    // Read/Write property ${PROPERTY.ident}
-    std::string get_testString();
-    void set_testString(const std::string& val);
-
-    // Read-only property ${PROPERTY.ident}
-    std::string get_version();
-
-    // Method echo
-    FB::variant echo(const FB::variant& msg);
-
-    // Event helpers
-    FB_JSAPI_EVENT(fired, 3, (const FB::variant&, bool, int));
-    FB_JSAPI_EVENT(echo, 2, (const FB::variant&, const int));
-    FB_JSAPI_EVENT(notify, 0, ());
-
-    // Method test-event
-    void testEvent(const FB::variant& s);
+	void connect(const std::string& addr);
+	void getAllServers_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
+	void getAllServers(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
+	void getServerInfo_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
+	void getServerInfo(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
 
 private:
-    Q3PluginWeakPtr m_plugin;
-    FB::BrowserHostPtr m_host;
-
-    std::string m_testString;
+	Q3PluginWeakPtr m_plugin;
+	FB::BrowserHostPtr m_host;
 };
 
 #endif

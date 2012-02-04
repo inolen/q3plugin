@@ -1,5 +1,5 @@
 /*globals
-jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
+jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true, document: true
 */
 (function () {
   'use strict';
@@ -14,6 +14,7 @@ jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
       Backbone.history.start({ root: '/index.html' });
     };
 
+    Q3P.plugin = document.getElementById('plugin');
     Q3P.AppSettings.fetch({ success: finish, error: finish }, { silent: true });
   };
 

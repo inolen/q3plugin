@@ -14,7 +14,7 @@ file (GLOB GENERAL RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     [^.]*.cpp
     [^.]*.h
     [^.]*.cmake
-    lib/[^.]*.c
+    lib/[^.]*.cpp
     lib/[^.]*.h
     )
 
@@ -40,12 +40,7 @@ SET(SOURCES
 # depending on the platform
 include_platform()
 
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
-
 find_package(SDL REQUIRED)
 include_directories(${SDL_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${SDL_LIBRARY})
 
 include("shim/shim.cmake")

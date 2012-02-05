@@ -30,3 +30,9 @@
   If the game loads but is tiny, close the browser and try again. We pass in the correct aspect ratio for the game based on the embedded object's size, however, quake3 requires a video restart for the changes to take place.
 
   Also, not all keys work currently (backspace, tab, arrow keys, etc.). It's not a major problem, the keys just weren't essential for development and were left unmapped. This will be fixed soon.
+
+## Screenshots
+
+  ![Main menu](http://www.inolen.com/bin/q3plugin_screenshot0.jpg)
+
+  ![Server browser](http://www.inolen.com/bin/q3plugin_screenshot1.jpg)

@@ -10,7 +10,7 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
     id: 'game-view',
 
     initialize: function () {
-      $(Q3P.getPlugin()).width(1170).height(731);
+      $(Q3P.getPlugin()).css({width: 1170, height: 731});
 
       if (this.options.connect !== undefined) {
         var split = this.options.connect.split(':'),

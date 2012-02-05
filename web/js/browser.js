@@ -153,7 +153,7 @@ jQuery: true, $: true, _: true, Backbone: true, window: true
         masterserver: Q3P.AppSettings.get('masterserver')
       });
 
-      $(Q3P.getPlugin()).width(0).height(0);
+      $(Q3P.getPlugin()).css({width: 0, height: 0});
       $(this.el).html(html).find('#servers').tablesorter();
 
       return this;

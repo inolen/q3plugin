@@ -12,10 +12,11 @@
     <script type="text/javascript" src="./js/game.js"></script>
     <script type="text/javascript" src="./js/app.js"></script>
     <script>
-      $(document).ready(function () {
-        Q3P.api = 'http://localhost:3000';
-        Q3P.bootstrap();
-      });
+      function pluginLoaded () {
+        $(document).ready(function () {
+          Q3P.bootstrap();
+        });
+      };
     </script>
   </head>
   <body>
@@ -46,8 +47,20 @@
       </header>
       <div class="row">
         <div class="span12">
-          <object id="plugin" type="application/x-q3plugin"></object>
+          <object id="plugin" type="application/x-q3plugin">
+            <param name="onload" value="pluginLoaded" />
+          </object>
           <div id="content">
+            <div class="padded">
+            <header class="jumbotron subhead">
+              <h1>Doh.</h1>
+              <p class="lead">We couldn't find the plugin to be loaded.</p>
+              <p class="download-info">
+                <a class="btn btn-primary btn-large" href="https://github.com/inolen/q3plugin">View project on GitHub</a>
+                <a class="btn btn-large" href="assets/q3plugin.zip">Download q3plugin</a>
+              </p>
+            </header>
+            </div>
           </div>
         </div>
       </div>

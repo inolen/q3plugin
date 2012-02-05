@@ -56,12 +56,6 @@ body {
   overflow: hidden;
 }
 
-object {
-  display: block;
-  padding: 5px;
-  background: #111;
-}
-
 .settings {
   margin-bottom: 20px;
 }

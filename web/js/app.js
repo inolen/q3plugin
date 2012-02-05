@@ -77,14 +77,12 @@ jQuery: true, $: true, _: true, Backbone: true, window: true, localStorage: true
 
     servers: function () {
       var browserView = new Q3P.BrowserView();
-      $('#content').html(browserView.render().el);
+      $('#content').html(browserView.render().el).show();
     },
 
     game: function (server) {
-      var gameView = new Q3P.GameView({
-        connect: server
-      });
-      $('#content').html(gameView.render().el);
+      var gameView = new Q3P.GameView({ connect: server });
+      $('#content').html('').hide();
     }
   });
 }());

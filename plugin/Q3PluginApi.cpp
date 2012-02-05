@@ -89,13 +89,19 @@ void Q3PluginApi::getAllServers(const std::string& addr, const unsigned short po
 
 void Q3PluginApi::getServerInfo_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
 	svcmd::cmds::svinfo info;
+	int num_retries = 2;
 
-	try {
-		svcmd::cmds::get_server_info(addr, port, info);
-	}
-	catch (std::exception& e) {
-		callback->InvokeAsync("",  FB::variant_list_of (e.what()));
-		return;
+	// Send the message twice in case one is dropped.
+	for (int i = 0; i < num_retries; i++) {
+		try {
+			svcmd::cmds::get_server_info(addr, port, info);
+		}
+		catch (std::exception& e) {
+			if (i == num_retries - 1) {
+				callback->InvokeAsync("",  FB::variant_list_of (e.what()));
+				return;
+			}
+		}
 	}
 
 	// Convert to an FB::VariantMap

@@ -1,0 +1,2 @@
+CFLAGS = -rdynamic
+USE_RENDERER_DLOPEN = 0

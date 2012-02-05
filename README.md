@@ -4,7 +4,7 @@
 
 ## Installation
 
-  The compilation process is still rough and has only been tested on Firefox and Chrome on Ubuntu 10.04.
+  The compilation process is still rough and has only been tested on Ubuntu 10.04.
 
   To get started, you'll need to install cmake, sdl and gtk:
 

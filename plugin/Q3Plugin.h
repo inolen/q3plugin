@@ -7,7 +7,9 @@
 #include "PluginEvents/KeyboardEvents.h"
 #include "PluginEvents/MouseEvents.h"
 #include "PluginCore.h"
-#include "lib/msgpipe.h"
+#include "Timer.h"
+#include "GameProcess.h"
+#include "MessagePipe.h"
 
 FB_FORWARD_PTR(Q3Plugin)
 class Q3Plugin : public FB::PluginCore {
@@ -18,12 +20,9 @@ public:
 	Q3Plugin();
 	virtual ~Q3Plugin();
 
-	void Connect(std::string server);
-
 protected:
-	virtual void ProcessMessage(msgpipe::message& msg);
-	virtual void LaunchGame(int argc, char** argv) = 0;
-	virtual void ShutdownGame() = 0;
+	void SendMessage(message_t& msg);
+	virtual void ProcessMessage(message_t& msg);
 
 	// If you want your plugin to always be windowless, set this to true
 	// If you want your plugin to be optionally windowless based on the
@@ -43,24 +42,21 @@ protected:
 	END_PLUGIN_EVENT_MAP()
 
 	/** BEGIN EVENTDEF -- DON'T CHANGE THIS LINE **/
-	virtual bool onKeyDown(FB::KeyDownEvent* evt, FB::PluginWindow* window) = 0;
-	virtual bool onKeyUp(FB::KeyUpEvent* evt, FB::PluginWindow* window) = 0;
-	virtual bool onMouseDown(FB::MouseDownEvent* evt, FB::PluginWindow* window) = 0;
-	virtual bool onMouseUp(FB::MouseUpEvent* evt, FB::PluginWindow* window) = 0;
-	virtual bool onMouseMove(FB::MouseMoveEvent* evt, FB::PluginWindow* window) = 0;
-	virtual bool onWindowAttached(FB::AttachedEvent* evt, FB::PluginWindow* window);
-	virtual bool onWindowDetached(FB::DetachedEvent* evt, FB::PluginWindow* window);
+	virtual bool onKeyDown(FB::KeyDownEvent *evt, FB::PluginWindow *window) = 0;
+	virtual bool onKeyUp(FB::KeyUpEvent *evt, FB::PluginWindow *window) = 0;
+	virtual bool onMouseDown(FB::MouseDownEvent *evt, FB::PluginWindow *window) = 0;
+	virtual bool onMouseUp(FB::MouseUpEvent *evt, FB::PluginWindow *window) = 0;
+	virtual bool onMouseMove(FB::MouseMoveEvent *evt, FB::PluginWindow *window) = 0;
+	virtual bool onWindowAttached(FB::AttachedEvent *evt, FB::PluginWindow *window);
+	virtual bool onWindowDetached(FB::DetachedEvent *evt, FB::PluginWindow *window);
 	/** END EVENTDEF -- DON'T CHANGE THIS LINE **/
 
-	msgpipe::fdxpipe msgpipe_;
-
 private:
-	void RunMessagePump();
-	void StartMessagePump();
-	void StopMessagePump();
+	void PumpMessages();
 
-	boost::thread pumpThread_;
-	char** gameArgs_;
+	FB::TimerPtr message_timer_;
+	MessagePipe *message_pipe_;
+	GameProcess *current_process_;
 };
 
 #endif

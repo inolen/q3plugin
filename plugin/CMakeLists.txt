@@ -1,6 +1,6 @@
 #/**********************************************************\
 #
-# Auto-generated CMakeLists.txt for the Q3Plugin project
+# Auto-generated CMakeLists.txt for the q3plugin project
 #
 #\**********************************************************/
 
@@ -11,10 +11,10 @@ set (CMAKE_BACKWARDS_COMPATIBILITY 2.6)
 Project(${PLUGIN_NAME})
 
 file (GLOB GENERAL RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    [^.]*.cpp
+    [^.]*.cc
     [^.]*.h
     [^.]*.cmake
-    lib/[^.]*.cpp
+    lib/[^.]*.cc
     lib/[^.]*.h
     )
 

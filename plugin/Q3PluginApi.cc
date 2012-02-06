@@ -4,7 +4,7 @@
 #include "variant_list.h"
 #include "DOM/Document.h"
 #include "global/config.h"
-#include "lib/svcmd.h"
+#include "ServerCommand.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // /@fn Q3PluginApi::Q3PluginApi(const Q3PluginPtr& plugin, const FB::BrowserHostPtr host)
@@ -54,15 +54,15 @@ void Q3PluginApi::connect(const std::string& addr, const unsigned short port) {
 
 	m_host->htmlLog(server.str());
 
-	getPlugin()->Connect(server.str());
+	//getPlugin()->LaunchGame(/*server.str()*/);
 }
 
 void Q3PluginApi::getAllServers_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
 	// Get the list of servers.
-	std::vector<svcmd::cmds::svaddr> servers;
+	std::vector<ServerCommand::ServerAddress> servers;
 
 	try {
-		svcmd::cmds::get_all_servers(addr, port, servers);
+		ServerCommand::GetAllServers(addr, port, servers);
 	}
 	catch (std::exception& e) {
 	}
@@ -70,8 +70,8 @@ void Q3PluginApi::getAllServers_thread(const std::string& addr, const unsigned s
 	// Convert to an FB::VariantList/FB::VariantMap.
 	FB::VariantList serversv;
 
-	for (std::vector<svcmd::cmds::svaddr>::iterator it = servers.begin(); it != servers.end(); ++it) {
-		svcmd::cmds::svaddr address = (*it);
+	for (std::vector<ServerCommand::ServerAddress>::iterator it = servers.begin(); it != servers.end(); ++it) {
+		ServerCommand::ServerAddress address = (*it);
 
 		FB::VariantMap addressv;
 		addressv["address"] = address.address().to_string();
@@ -88,13 +88,13 @@ void Q3PluginApi::getAllServers(const std::string& addr, const unsigned short po
 }
 
 void Q3PluginApi::getServerInfo_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
-	svcmd::cmds::svinfo info;
+	ServerCommand::ServerInfo info;
 	int num_retries = 2;
 
 	// Send the message twice in case one is dropped.
 	for (int i = 0; i < num_retries; i++) {
 		try {
-			svcmd::cmds::get_server_info(addr, port, info);
+			ServerCommand::GetServerInfo(addr, port, info);
 		}
 		catch (std::exception& e) {
 			if (i == num_retries - 1) {

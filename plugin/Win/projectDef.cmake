@@ -1,6 +1,6 @@
 #/**********************************************************\
 # Auto-generated Windows project definition file for the
-# Q3Plugin project
+# q3plugin project
 #\**********************************************************/
 
 # Windows template platform definition CMake file

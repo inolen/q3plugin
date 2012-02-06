@@ -1,6 +1,6 @@
 #/**********************************************************\
 # Auto-generated X11 project definition file for the
-# Q3Plugin project
+# q3plugin project
 #\**********************************************************/
 
 # X11 template platform definition CMake file
@@ -8,7 +8,7 @@
 
 # remember that the current source dir is the project root; this file is in X11/
 file (GLOB PLATFORM RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    X11/[^.]*.cpp
+    X11/[^.]*.cc
     X11/[^.]*.h
     X11/[^.]*.cmake
     )

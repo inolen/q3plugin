@@ -19,7 +19,7 @@
     $ svn co svn://svn.icculus.org/quake3/trunk ioquake3
     $ make
 
-  Now, you should have the main plugin shared libraries, `libq3plugshim.so` and `npq3plugin.so` in `firebreath/build/bin/q3plugin` and the ioquake3 executable, `ioquake3.$ARCH` in `ioquake3/build/release-linux-$ARCH` (note, when you copy this file please leave off the architecture extension).
+  Now, you should have the main plugin shared libraries, `libq3pluginshim.so` and `npq3plugin.so` in `firebreath/build/bin/q3plugin` and the ioquake3 executable, `ioquake3.$ARCH` in `ioquake3/build/release-linux-$ARCH` (note, when you copy this file please leave off the architecture extension).
 
   You'll need to copy these 3 files to your firefox plugin directory (which Chrome actually checks as well) `~/.mozilla/plugins`. If the directory doesn't already exist go ahead and create it.
 

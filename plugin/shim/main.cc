@@ -2,15 +2,15 @@
 #include <dlfcn.h>
 #include <SDL.h>
 #include <unistd.h>
-#include "../lib/msgpipe.h"
-
-#define FIFO_NAME "q3plugin"
+#include "../MessagePipe.h"
 
 extern "C" void Cmd_ExecuteString(const char*);
 int (*OG_SDL_PushEvent)(SDL_Event*) = NULL;
-static void process_messages();
 
-msgpipe::fdxpipe g_msgpipe;
+static void SendMessage(message_t& msg);
+static void ProcessMessages();
+
+MessagePipe *g_msgpipe = NULL;
 
 /**
  * Hook the functions provided by libsdl.
@@ -21,16 +21,17 @@ extern "C" SDL_GrabMode SDL_WM_GrabInput(SDL_GrabMode mode) {
 	if (mode != SDL_GRAB_QUERY) {
 		state = mode;
 
-		msgpipe::message msg;
-		msg.type = msgpipe::msgs::MOUSELOCK;
+		message_t msg;
+		msg.type = MOUSELOCK;
 		msg.mouselock.lock = state == SDL_GRAB_ON;
-		g_msgpipe.send(msg);
+
+		SendMessage(msg);
 	}
 
 	return state;
 }
 
-extern "C" int SDL_PollEvent(SDL_Event* event) {
+extern "C" int SDL_PollEvent(SDL_Event *event) {
 	static int (*func)(SDL_Event*) = NULL;
 
 	if (!func) {
@@ -38,7 +39,7 @@ extern "C" int SDL_PollEvent(SDL_Event* event) {
 	}
 
 	// Poll our own event queue when SDL polls.
-	process_messages();
+	ProcessMessages();
 
 	// Call the original SD_PollEvent.
 	return (*func)(event);
@@ -47,7 +48,7 @@ extern "C" int SDL_PollEvent(SDL_Event* event) {
 /**
  * Shim specific functions.
  */
-static char *curprocpath() {
+static char *CurrentProcessPath() {
 	static char path[PATH_MAX];
 
 	int len = readlink("/proc/self/exe", path, PATH_MAX - 1);
@@ -59,27 +60,31 @@ static char *curprocpath() {
 	return path;
 }
 
-static void process_messages() {
-	msgpipe::message msg;
+static void SendMessage(message_t& msg) {
+	g_msgpipe->Send(msg);
+}
 
-	while (g_msgpipe.poll(msg)) {
+static void ProcessMessages() {
+	message_t msg;
+
+	while (g_msgpipe->Poll(msg)) {
 		switch (msg.type) {
-			case msgpipe::msgs::SDLEVENT:
+			case SDLEVENT:
 				OG_SDL_PushEvent(&msg.sdlevent.event);
 				break;
 
-			case msgpipe::msgs::GAMECMD:
+			case GAMECMD:
 				Cmd_ExecuteString(msg.gamecmd.text);
 				break;
 		}
 	}
 }
 
-static int should_enable() {
-	char* current_exe = NULL;
-	char* base_name = NULL;
+static int ShouldEnable() {
+	char *current_exe = NULL;
+	char *base_name = NULL;
 
-	if ((current_exe = curprocpath()) == NULL) {
+	if ((current_exe = CurrentProcessPath()) == NULL) {
 		return 0;
 	}
 
@@ -93,7 +98,7 @@ static int should_enable() {
  */
 __attribute__((constructor)) static void load(void) {
 	// Major hack to avoid conflicts with other processes q3 launches.
-	if (!should_enable()) {
+	if (!ShouldEnable()) {
 		return;
 	}
 
@@ -101,11 +106,9 @@ __attribute__((constructor)) static void load(void) {
 	OG_SDL_PushEvent = (int (*)(SDL_Event*))dlsym(RTLD_NEXT, "SDL_PushEvent");
 
 	// Initialize message pipe.
-	if (!g_msgpipe.open(std::string(FIFO_NAME), true)) {
-		return;
-	}
+	g_msgpipe = new MessagePipe("message_queue", false);
 }
 
 __attribute__((destructor)) static void unload(void) {
-	g_msgpipe.close();
+	delete g_msgpipe;
 }

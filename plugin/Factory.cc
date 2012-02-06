@@ -3,20 +3,20 @@
 #include <boost/make_shared.hpp>
 
 #if defined FB_WIN
-#include "Win/Q3PluginWin.h"
-#define Q3PLUGIN_IMPL Q3PluginWin
+#include "X11/Q3PluginWin.h"
+#define Q3PLUGIN Q3PluginWin
 #elif defined FB_MACOSX
-#include "Mac/Q3PluginMac.h"
-#define Q3PLUGIN_IMPL Q3PluginMac
+#include "X11/Q3PluginMac.h"
+#define Q3PLUGIN Q3pluginMac
 #else
 #include "X11/Q3PluginX11.h"
-#define Q3PLUGIN_IMPL Q3PluginX11
+#define Q3PLUGIN Q3PluginX11
 #endif
 
 class PluginFactory : public FB::FactoryBase {
 public:
     FB::PluginCorePtr createPlugin(const std::string& mimetype) {
-        return boost::make_shared<Q3PLUGIN_IMPL>();
+        return boost::make_shared<Q3PLUGIN>();
     }
 
     void globalPluginInitialize() {

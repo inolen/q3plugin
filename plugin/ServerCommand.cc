@@ -1,4 +1,4 @@
-#include "svcmd.h"
+#include "ServerCommand.h"
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/array.hpp>
@@ -20,7 +20,7 @@ void set_result(boost::optional<boost::system::error_code>* destination,
 }
 
 void set_bytes_result(boost::optional<boost::system::error_code>* error_destination,
-	size_t* transferred_destination,
+	size_t *transferred_destination,
 	boost::system::error_code error_source,
 	size_t transferred_source
 ) {
@@ -69,11 +69,59 @@ size_t read_with_timeout(udp::socket& socket, const MutableBufferSequence& buffe
 }
 
 /**
+ * Specialized commands.
+ */
+void ServerCommand::GetAllServers(const std::string& address, int port, std::vector<ServerAddress>& servers) {
+	// Send the command and grab the response.
+	CommandRequest req("getservers Quake3Arena 68 empty full");
+	CommandResponse resp;
+
+	Execute(req, address, port, resp);
+
+	// Parse the response. Start by skipping the response header.
+	int i = 18;
+	char c;
+
+	while (i < resp.buf.size()) {
+		c = resp.buf[i++];
+
+		// If we have enough data to read.
+		if (c == '\\' && resp.buf.size() - i >= 6) {
+			boost::asio::ip::address_v4 addr(ntohl(*(unsigned long *)&resp.buf[i]));
+			unsigned short port = ntohs(*(unsigned short *)&resp.buf[i+4]);
+
+			servers.push_back(ServerAddress(addr, port));
+
+			i += 6;
+		}
+	};
+}
+
+void ServerCommand::GetServerInfo(const std::string& address, int port, ServerInfo& info) {
+	// Send the command and grab the response.
+	CommandRequest req("getinfo xxx");
+	CommandResponse resp;
+
+	Execute(req, address, port, resp);
+
+	// Copy the response into a string (skipping the header).
+	std::string buf(resp.buf.begin() + 18, resp.buf.end());
+
+	// Split by backslashes.
+	std::vector<std::string> split;
+	boost::split(split, buf, boost::is_any_of("\\"));
+
+	for (int i = 0; i < split.size(); i += 2) {
+		std::string key = split[i];
+		std::string val = split[i+1];
+		info[key] = val;
+	}
+}
+
+/**
  * Core method to send a UDP datagram request and receive a response.
  */
-namespace svcmd {
-
-void exec(const request& req, const std::string& addr, int port, response& res) {
+void ServerCommand::Execute(const CommandRequest& req, const std::string& addr, int port, CommandResponse& res) {
 	// Convert port to string.
 	std::ostringstream portstr;
 	portstr << port;
@@ -99,59 +147,4 @@ void exec(const request& req, const std::string& addr, int port, response& res) 
 
 	// Since we're nice, move this into a vector as to not store a tuple of buf/len.
 	res.buf.insert(res.buf.begin(), recv_buf.begin(), recv_buf.begin() + recv_len);
-}
-
-/**
- * Specialized commands.
- */
-namespace cmds {
-
-void get_all_servers(const std::string& address, int port, std::vector<svaddr>& servers) {
-	// Send the command and grab the response.
-	svcmd::request req("getservers Quake3Arena 68 empty full");
-	svcmd::response resp;
-
-	svcmd::exec(req, address, port, resp);
-
-	// Parse the response. Start by skipping the response header.
-	int i = 18;
-	char c;
-
-	while (i < resp.buf.size()) {
-		c = resp.buf[i++];
-
-		// If we have enough data to read.
-		if (c == '\\' && resp.buf.size() - i >= 6) {
-			boost::asio::ip::address_v4 addr(ntohl(*(unsigned long *)&resp.buf[i]));
-			unsigned short port = ntohs(*(unsigned short *)&resp.buf[i+4]);
-
-			servers.push_back(svaddr(addr, port));
-
-			i += 6;
-		}
-	};
-}
-
-void get_server_info(const std::string& address, int port, svinfo& info) {
-	// Send the command and grab the response.
-	svcmd::request req("getinfo xxx");
-	svcmd::response resp;
-
-	svcmd::exec(req, address, port, resp);
-
-	// Copy the response into a string (skipping the header).
-	std::string buf(resp.buf.begin() + 18, resp.buf.end());
-
-	// Split by backslashes.
-	std::vector<std::string> split;
-	boost::split(split, buf, boost::is_any_of("\\"));
-
-	for (int i = 0; i < split.size(); i += 2) {
-		std::string key = split[i];
-		std::string val = split[i+1];
-		info[key] = val;
-	}
-}
-
-}
 }

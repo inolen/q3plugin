@@ -1,6 +1,6 @@
 #/**********************************************************\
 # Auto-generated Mac project definition file for the
-# Q3Plugin project
+# q3plugin project
 #\**********************************************************/
 
 # Mac template platform definition CMake file

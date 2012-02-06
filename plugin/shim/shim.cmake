@@ -1,10 +1,27 @@
-Project(q3plugshim)
+Project(q3pluginshim)
 
 include (FindPkgConfig)
 
 file (GLOB GENERAL RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    shim/[^.]*.cpp
-    lib/msgpipe.*
+    shim/[^.]*.cc
+    MessagePipe.cc
+    MessagePipe.h
+    )
+
+# Generated files are stored in ${GENERATED} by the project configuration
+SET_SOURCE_FILES_PROPERTIES(
+    ${GENERATED}
+    PROPERTIES
+        GENERATED 1
+    )
+
+SOURCE_GROUP(Generated FILES
+    ${GENERATED}
+    )
+
+SET(SOURCES
+    ${GENERAL}
+    ${GENERATED}
     )
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${GENERAL})

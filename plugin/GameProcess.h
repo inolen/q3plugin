@@ -12,18 +12,16 @@ public:
 	GameProcess(FB::PluginWindow *window, const std::string& path);
 	virtual ~GameProcess();
 
-	bool Launch(int width, int height);
+	bool Spawn(int width, int height, const std::string& connectTo);
+	void Kill();
 
 protected:
 	virtual bool SpawnNativeProcess() = 0;
-	virtual bool KillNativeProcess() = 0;
+	virtual void KillNativeProcess() = 0;
 
 	FB::PluginWindow *window_;
 	std::string path_;
 	char **argv_;
-
-private:
-	void Shutdown();
 };
 
 #endif

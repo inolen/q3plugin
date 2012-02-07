@@ -4,7 +4,7 @@
 #include "variant_list.h"
 #include "DOM/Document.h"
 #include "global/config.h"
-#include "ServerCommand.h"
+#include "ServerCommands.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // /@fn Q3PluginApi::Q3PluginApi(const Q3PluginPtr& plugin, const FB::BrowserHostPtr host)
@@ -48,53 +48,51 @@ Q3PluginPtr Q3PluginApi::getPlugin() {
 	return plugin;
 }
 
-void Q3PluginApi::connect(const std::string& addr, const unsigned short port) {
+void Q3PluginApi::connect(const std::string& address, const unsigned short port) {
 	std::ostringstream server;
-	server << addr << ":" << port;
+	server << address << ":" << port;
 
-	m_host->htmlLog(server.str());
-
-	//getPlugin()->LaunchGame(/*server.str()*/);
+	getPlugin()->LaunchGame(server.str());
 }
 
-void Q3PluginApi::getAllServers_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
+void Q3PluginApi::getAllServers_thread(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback) {
 	// Get the list of servers.
-	std::vector<ServerCommand::ServerAddress> servers;
+	std::vector<ServerCommands::ServerAddress> servers;
 
 	try {
-		ServerCommand::GetAllServers(addr, port, servers);
+		ServerCommands::GetAllServers(address, port, servers);
 	}
 	catch (std::exception& e) {
 	}
 
 	// Convert to an FB::VariantList/FB::VariantMap.
-	FB::VariantList serversv;
+	FB::VariantList serversVar;
 
-	for (std::vector<ServerCommand::ServerAddress>::iterator it = servers.begin(); it != servers.end(); ++it) {
-		ServerCommand::ServerAddress address = (*it);
+	for (std::vector<ServerCommands::ServerAddress>::iterator it = servers.begin(); it != servers.end(); ++it) {
+		ServerCommands::ServerAddress sa = (*it);
 
-		FB::VariantMap addressv;
-		addressv["address"] = address.address().to_string();
-		addressv["port"] = address.port();
-		serversv.push_back(addressv);
+		FB::VariantMap addressVar;
+		addressVar["address"] = sa.address().to_string();
+		addressVar["port"] = sa.port();
+		serversVar.push_back(addressVar);
 	}
 
 	// Callback to JS.
-	callback->InvokeAsync("", FB::variant_list_of (NULL) (serversv));
+	callback->InvokeAsync("", FB::variant_list_of (NULL) (serversVar));
 }
 
-void Q3PluginApi::getAllServers(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
-	boost::thread t(boost::bind(&Q3PluginApi::getAllServers_thread, this, addr, port, callback));
+void Q3PluginApi::getAllServers(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback) {
+	boost::thread t(boost::bind(&Q3PluginApi::getAllServers_thread, this, address, port, callback));
 }
 
-void Q3PluginApi::getServerInfo_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
-	ServerCommand::ServerInfo info;
+void Q3PluginApi::getServerInfo_thread(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback) {
+	ServerCommands::ServerInfo info;
 	int num_retries = 2;
 
 	// Send the message twice in case one is dropped.
 	for (int i = 0; i < num_retries; i++) {
 		try {
-			ServerCommand::GetServerInfo(addr, port, info);
+			ServerCommands::GetServerInfo(address, port, info);
 		}
 		catch (std::exception& e) {
 			if (i == num_retries - 1) {
@@ -105,18 +103,18 @@ void Q3PluginApi::getServerInfo_thread(const std::string& addr, const unsigned s
 	}
 
 	// Convert to an FB::VariantMap
-	FB::VariantMap infov;
-	infov["hostname"] = info["hostname"];
-	infov["game"] = info["game"];
-	infov["gametype"] = info["gametype"];
-	infov["mapname"] = info["mapname"];
-	infov["clients"] = info["clients"];
-	infov["maxclients"] = info["sv_maxclients"];
+	FB::VariantMap infoVar;
+	infoVar["hostname"] = info["hostname"];
+	infoVar["game"] = info["game"];
+	infoVar["gametype"] = info["gametype"];
+	infoVar["mapname"] = info["mapname"];
+	infoVar["clients"] = info["clients"];
+	infoVar["maxclients"] = info["sv_maxclients"];
 
 	// Callback to JS.
-	callback->InvokeAsync("",  FB::variant_list_of (NULL) (infov));
+	callback->InvokeAsync("",  FB::variant_list_of (NULL) (infoVar));
 }
 
-void Q3PluginApi::getServerInfo(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback) {
-	boost::thread t(boost::bind(&Q3PluginApi::getServerInfo_thread, this, addr, port, callback));
+void Q3PluginApi::getServerInfo(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback) {
+	boost::thread t(boost::bind(&Q3PluginApi::getServerInfo_thread, this, address, port, callback));
 }

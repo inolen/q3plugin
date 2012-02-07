@@ -20,6 +20,9 @@ public:
 	Q3Plugin();
 	virtual ~Q3Plugin();
 
+	void LaunchGame();
+	void LaunchGame(const std::string& connectTo);
+
 protected:
 	void SendMessage(message_t& msg);
 	virtual void ProcessMessage(message_t& msg);
@@ -53,6 +56,7 @@ protected:
 
 private:
 	void PumpMessages();
+	void ShutdownGame();
 
 	FB::TimerPtr message_timer_;
 	MessagePipe *message_pipe_;

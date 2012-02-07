@@ -9,11 +9,10 @@ GameProcess::GameProcess(FB::PluginWindow *window, const std::string& path) :
 }
 
 GameProcess::~GameProcess() {
-	Shutdown();
 }
 
-bool GameProcess::Launch(int width, int height) {
-	int argc = 9;
+bool GameProcess::Spawn(int width, int height, const std::string& connectTo) {
+	int argc = !connectTo.empty() ? 11 : 9;
 
 	argv_ = (char**)malloc(sizeof(char*) * (argc+1));
 	memset(argv_, 0, sizeof(char*) * (argc+1));
@@ -30,11 +29,16 @@ bool GameProcess::Launch(int width, int height) {
 	argv_[8] = (char*)malloc(sizeof(char) * 8);
 	snprintf(argv_[8], 8, "%i", height);
 
+	if (!connectTo.empty()) {
+		argv_[9] = strdup("+connect");
+		argv_[10] = strdup(connectTo.c_str());
+	}
+
 	// Spawn the native process.
 	SpawnNativeProcess();
 }
 
-void GameProcess::Shutdown() {
+void GameProcess::Kill() {
 	// Kill the native process.
 	KillNativeProcess();
 
@@ -48,6 +52,7 @@ void GameProcess::Shutdown() {
 		}
 
 		free(argv_);
-	}
 
+		argv_ = NULL;
+	}
 }

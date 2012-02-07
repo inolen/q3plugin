@@ -16,11 +16,11 @@ public:
 
 	Q3PluginPtr getPlugin();
 
-	void connect(const std::string& addr, unsigned short port);
-	void getAllServers_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
-	void getAllServers(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
-	void getServerInfo_thread(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
-	void getServerInfo(const std::string& addr, const unsigned short port, const FB::JSObjectPtr& callback);
+	void connect(const std::string& address, unsigned short port);
+	void getAllServers_thread(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback);
+	void getAllServers(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback);
+	void getServerInfo_thread(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback);
+	void getServerInfo(const std::string& address, const unsigned short port, const FB::JSObjectPtr& callback);
 
 private:
 	Q3PluginWeakPtr m_plugin;

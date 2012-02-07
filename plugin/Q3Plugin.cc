@@ -41,8 +41,40 @@ FB::JSAPIPtr Q3Plugin::createJSAPI() {
 	return boost::make_shared<Q3PluginApi>(FB::ptr_cast<Q3Plugin>(shared_from_this()), m_host);
 }
 
+void Q3Plugin::LaunchGame() {
+	std::string connectTo;
+	LaunchGame(connectTo);
+}
+
+void Q3Plugin::LaunchGame(const std::string& connectTo) {
+	// Shutdown any previous instances.
+	ShutdownGame();
+
+	// Load ioquake3 from the same directory as the plugin.
+	fs::path p(getFSPath());
+	std::ostringstream gamePath;
+	gamePath << p.parent_path() << "/ioquake3";
+
+	// Create a game instance.
+	FB::PluginWindow *window = GetWindow();
+	int width = window->getWindowWidth();
+	int height = window->getWindowHeight();
+
+	current_process_ = new Q3PROCESS(window, gamePath.str());
+	current_process_->Spawn(width, height, connectTo);
+}
+
+void Q3Plugin::ShutdownGame() {
+	// Stop the process.
+	if (current_process_ != NULL) {
+		current_process_->Kill();
+		delete current_process_;
+		current_process_ = NULL;
+	}
+}
+
 /**
- * Send/receive custom messages between this plugin and the shim.
+ * Send/receive custom messages between the plugin and shim.
  */
 void Q3Plugin::SendMessage(message_t& msg) {
 	message_pipe_->Send(msg);
@@ -65,27 +97,18 @@ bool Q3Plugin::onWindowAttached(FB::AttachedEvent *evt, FB::PluginWindow *window
 	message_timer_ = FB::Timer::getTimer(1000, true, boost::bind(&Q3Plugin::PumpMessages, this));
 	message_timer_->start();
 
-	int width = window->getWindowWidth();
-	int height = window->getWindowHeight();
-
-	// Load ioquake3 from the same directory as the plugin.
-	fs::path p(getFSPath());
-	std::ostringstream gamePath;
-	gamePath << p.parent_path() << "/ioquake3";
-
-	// Create a game instance.
-	current_process_ = new Q3PROCESS(window, gamePath.str());
-	current_process_->Launch(width, height);
+	// TODO don't always launch game at start.
+	LaunchGame();
 
 	return true;
 }
 
 bool Q3Plugin::onWindowDetached(FB::DetachedEvent *evt, FB::PluginWindow *window) {
-	if (current_process_ != NULL) {
-		delete current_process_;
-	}
-
+	// Stop the message thread.
 	message_timer_->stop();
+
+	// Stop the game.
+	ShutdownGame();
 
 	return false;
 }

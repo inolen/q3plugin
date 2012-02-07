@@ -8,10 +8,12 @@
 namespace fs = boost::filesystem;
 
 GameProcessX11::GameProcessX11(FB::PluginWindow *window, const std::string& path) :
+	gamepid_(0),
 	GameProcess(window, path) {
 }
 
 GameProcessX11::~GameProcessX11() {
+	Kill();
 }
 
 bool GameProcessX11::SpawnNativeProcess() {
@@ -36,13 +38,20 @@ bool GameProcessX11::SpawnNativeProcess() {
 	setenv("LD_PRELOAD", shimPath.str().c_str(), TRUE);
 
 	// Launch game.
-	g_spawn_async(NULL, (gchar**)argv_, NULL, (GSpawnFlags)0, NULL, NULL, &gamepid_, NULL);
+	g_spawn_async(NULL, (gchar**)argv_, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &gamepid_, NULL);
 }
 
-bool GameProcessX11::KillNativeProcess() {
-	// Request the child process terminate.
-	kill(gamepid_, SIGTERM);
+void GameProcessX11::KillNativeProcess() {
+	if (gamepid_ != 0) {
+		// Request the child process terminate.
+		kill(gamepid_, SIGTERM);
 
-	// Wait for it to.
-	waitpid(gamepid_, NULL, 0);
+		// Wait for it to.
+		waitpid(gamepid_, NULL, 0);
+
+		// Close process resource.
+		g_spawn_close_pid(gamepid_);
+
+		gamepid_ = 0;
+	}
 }

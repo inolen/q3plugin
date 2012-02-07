@@ -10,7 +10,7 @@ public:
 
 protected:
 	virtual bool SpawnNativeProcess();
-	virtual bool KillNativeProcess();
+	virtual void KillNativeProcess();
 
 private:
 	pid_t gamepid_;

@@ -1,15 +1,15 @@
 #include "Q3Plugin.h"
 #include <boost/filesystem/operations.hpp>
-#include <unistd.h>
+//#include <unistd.h>
 #include "FactoryBase.h"
 #include "Q3PluginApi.h"
 
 // TODO Merge this with Q3PluginFactory.
 #if defined FB_WIN
-#include "X11/GameProcessWin.h"
+#include "Win/GameProcessWin.h"
 #define Q3PROCESS GameProcessWin
 #elif defined FB_MACOSX
-#include "X11/GameProcessMac.h"
+#include "Mac/GameProcessMac.h"
 #define Q3PROCESS GameProcessMac
 #else
 #include "X11/GameProcessX11.h"

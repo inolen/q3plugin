@@ -1,6 +1,7 @@
 *.sublime-*
 *.o
 *.so
+build/
 bootstrap/
 ioquake3/*
 !ioquake3/Makefile.local

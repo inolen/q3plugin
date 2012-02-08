@@ -15,7 +15,7 @@ public:
 
 private:
 	template <typename MutableBufferSequence>
-	size_t ReadWithTimeout(const MutableBufferSequence& buffer, size_t& count, int seconds);
+	void ReadWithTimeout(const MutableBufferSequence& buffer, size_t& count, int seconds);
 
 	boost::asio::io_service io_service_;
 	boost::asio::ip::udp::endpoint receiver_endpoint_;

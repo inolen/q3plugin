@@ -3,11 +3,11 @@
 #include <boost/make_shared.hpp>
 
 #if defined FB_WIN
-#include "X11/Q3PluginWin.h"
+#include "Win/Q3PluginWin.h"
 #define Q3PLUGIN Q3PluginWin
 #elif defined FB_MACOSX
 #include "X11/Q3PluginMac.h"
-#define Q3PLUGIN Q3pluginMac
+#define Q3PLUGIN Q3PluginMac
 #else
 #include "X11/Q3PluginX11.h"
 #define Q3PLUGIN Q3PluginX11

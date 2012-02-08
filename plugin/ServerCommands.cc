@@ -61,7 +61,7 @@ void ServerCommandClient::WaitForResponse(std::vector<unsigned char>& response, 
 }
 
 template <typename MutableBufferSequence>
-size_t ServerCommandClient::ReadWithTimeout(const MutableBufferSequence& buffer, size_t& count, int seconds) {
+void ServerCommandClient::ReadWithTimeout(const MutableBufferSequence& buffer, size_t& count, int seconds) {
 	boost::optional<boost::system::error_code> timer_result;
 	boost::optional<boost::system::error_code> read_result;
 

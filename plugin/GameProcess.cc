@@ -24,10 +24,10 @@ bool GameProcess::Spawn(int width, int height, const std::string& connectTo) {
 	argv_[4] = strdup("-1");
 	argv_[5] = strdup("+r_customWidth");
 	argv_[6] = (char*)malloc(sizeof(char) * 8);
-	snprintf(argv_[6], 8, "%i", width);
+	sprintf(argv_[6], "%i", width);
 	argv_[7] = strdup("+r_customHeight");
 	argv_[8] = (char*)malloc(sizeof(char) * 8);
-	snprintf(argv_[8], 8, "%i", height);
+	sprintf(argv_[8], "%i", height);
 
 	if (!connectTo.empty()) {
 		argv_[9] = strdup("+connect");
@@ -36,6 +36,8 @@ bool GameProcess::Spawn(int width, int height, const std::string& connectTo) {
 
 	// Spawn the native process.
 	SpawnNativeProcess();
+
+	return true;
 }
 
 void GameProcess::Kill() {

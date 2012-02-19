@@ -3,11 +3,7 @@
 
 #include <string>
 #include <SDL.h>
-
-// Forward declare.
-namespace boost { namespace interprocess {
-class message_queue;
-}}
+#include <boost/interprocess/ipc/message_queue.hpp>
 
 typedef enum {
 	SDLEVENT,

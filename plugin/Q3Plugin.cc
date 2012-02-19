@@ -1,6 +1,5 @@
 #include "Q3Plugin.h"
 #include <boost/filesystem/operations.hpp>
-//#include <unistd.h>
 #include "FactoryBase.h"
 #include "Q3PluginApi.h"
 

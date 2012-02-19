@@ -1,5 +1,4 @@
 #include "MessagePipe.h"
-#include <boost/interprocess/ipc/message_queue.hpp>
 
 namespace ipc = boost::interprocess;
 

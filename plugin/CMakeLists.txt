@@ -14,8 +14,6 @@ file (GLOB GENERAL RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     [^.]*.cc
     [^.]*.h
     [^.]*.cmake
-    lib/[^.]*.cc
-    lib/[^.]*.h
     )
 
 include_directories(${PLUGIN_INCLUDE_DIRS})
@@ -43,4 +41,5 @@ include_platform()
 find_package(SDL REQUIRED)
 include_directories(${SDL_INCLUDE_DIR})
 
-include("shim/shim.cmake")
+# Add the shim project
+add_subdirectory(shim)

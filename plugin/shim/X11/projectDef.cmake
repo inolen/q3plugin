@@ -1,8 +1,3 @@
-#/**********************************************************\
-# Auto-generated X11 project definition file for the
-# q3plugin project
-#\**********************************************************/
-
 # X11 template platform definition CMake file
 # Included from ../CMakeLists.txt
 
@@ -24,11 +19,4 @@ set (SOURCES
     ${PLATFORM}
     )
 
-add_x11_plugin(${PROJECT_NAME} SOURCES)
-
-# add library dependencies here; leave ${PLUGIN_INTERNAL_DEPS} there unless you know what you're doing!
-target_link_libraries(${PROJECT_NAME}
-    X11
-    ${PLUGIN_INTERNAL_DEPS}
-    dl
-    )
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
